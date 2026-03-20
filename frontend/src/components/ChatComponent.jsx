@@ -31,7 +31,7 @@ const ChatComponent = () => {
     setIsLoading(true);
 
     try {
-      const response = await axios.post('http://127.0.0.1:8000/ai/suggest', {
+      const response = await axios.post(`http://${window.location.hostname}:8000/ai/suggest`, {
         user_message: userMessage
       });
       
@@ -110,26 +110,33 @@ const ChatComponent = () => {
           </div>
 
           {/* Input Area */}
-          <form 
-            onSubmit={handleSend} 
-            className="p-3 bg-white dark:bg-gray-800 border-t border-gray-200 dark:border-gray-700 flex items-center gap-2"
-          >
-            <input
-              type="text"
-              value={input}
-              onChange={(e) => setInput(e.target.value)}
-              placeholder="Ask for a recommendation..."
-              className="flex-1 bg-gray-100 dark:bg-gray-900 border-none rounded-full px-4 py-2.5 text-sm focus:ring-2 focus:ring-red-500 text-gray-900 dark:text-gray-100 outline-none"
-              disabled={isLoading}
-            />
-            <button
-              type="submit"
-              disabled={!input.trim() || isLoading}
-              className="bg-red-600 hover:bg-red-700 disabled:bg-gray-300 disabled:dark:bg-gray-600 text-white p-2.5 rounded-full transition-colors flex flex-shrink-0 items-center justify-center focus:outline-none"
+          <div className="bg-white dark:bg-gray-800 border-t border-gray-200 dark:border-gray-700 flex flex-col">
+            <form 
+              onSubmit={handleSend} 
+              className="p-3 flex items-center gap-2 pb-2"
             >
-              <Send size={18} />
-            </button>
-          </form>
+              <input
+                type="text"
+                value={input}
+                onChange={(e) => setInput(e.target.value)}
+                placeholder="Ask for a recommendation..."
+                className="flex-1 bg-gray-100 dark:bg-gray-900 border-none rounded-full px-4 py-2.5 text-sm focus:ring-2 focus:ring-red-500 text-gray-900 dark:text-gray-100 outline-none w-full"
+                disabled={isLoading}
+              />
+              <button
+                type="submit"
+                disabled={!input.trim() || isLoading}
+                className="bg-red-600 hover:bg-red-700 disabled:bg-gray-300 disabled:dark:bg-gray-600 text-white p-2.5 rounded-full transition-colors flex flex-shrink-0 items-center justify-center focus:outline-none"
+              >
+                <Send size={18} />
+              </button>
+            </form>
+            <div className="px-4 pb-3 text-center">
+              <span className="text-[10px] text-gray-400 dark:text-gray-500">
+                AI Waiter can make mistakes. Please verify allergy info with staff.
+              </span>
+            </div>
+          </div>
         </div>
       )}
     </div>

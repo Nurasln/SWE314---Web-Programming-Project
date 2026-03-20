@@ -5,7 +5,7 @@ from typing import List, Optional
 
 from models import Table, MenuItem, Order, OrderItem, OrderStatus, Category
 from database import create_db_and_tables, get_session
-from schemas import AISuggestionRequest, AISuggestionResponse, CategoryCreate
+from schemas import AISuggestionRequest, AISuggestionResponse, CategoryCreate, TableBillResponse, PaymentRequest, TableBillItem
 from services.ai_service import AIWaiterService
 
 app = FastAPI(title="QuickPay: QR Menu & Split Bill")
@@ -134,6 +134,68 @@ def split_bill(order_id: int, num_people: int = Query(..., gt=0), session: Sessi
         "currency": "USD" # Can be altered depending on the region rules
     }
 
+@app.get("/tables/{table_id}/bill", response_model=TableBillResponse)
+def get_table_bill(table_id: int, session: Session = Depends(get_session)):
+    orders = session.exec(select(Order).where(Order.table_id == table_id).where(Order.status == OrderStatus.pending)).all()
+    items_resp = []
+    total = 0.0
+    for order in orders:
+        for item in order.order_items:
+            if item.status == OrderStatus.pending:
+                menu_item = session.get(MenuItem, item.menu_item_id)
+                if menu_item:
+                    items_resp.append(TableBillItem(
+                        order_item_id=item.id,
+                        name=menu_item.name,
+                        price=menu_item.price,
+                        quantity=item.quantity
+                    ))
+                    total += float(menu_item.price) * item.quantity
+    return TableBillResponse(items=items_resp, total_unpaid=round(total, 2))
+
+@app.post("/tables/{table_id}/pay")
+def pay_table_bill(table_id: int, payment: PaymentRequest, session: Session = Depends(get_session)):
+    paid_total = 0.0
+    
+    target_status = OrderStatus.pending_cash if payment.method == "cash" else OrderStatus.paid
+    
+    for item_id in payment.order_item_ids:
+        item = session.get(OrderItem, item_id)
+        if item and item.status == OrderStatus.pending:
+            order = session.get(Order, item.order_id)
+            if order and order.table_id == table_id:
+                item.status = target_status
+                session.add(item)
+                menu_item = session.get(MenuItem, item.menu_item_id)
+                if menu_item:
+                    paid_total += float(menu_item.price) * item.quantity
+                    
+    session.commit()
+    
+    # check if any orders are now fully paid or pending_cash
+    orders = session.exec(select(Order).where(Order.table_id == table_id).where(Order.status == OrderStatus.pending)).all()
+    for order in orders:
+        all_resolved = all(i.status in (OrderStatus.paid, OrderStatus.pending_cash) for i in order.order_items)
+        if all_resolved and len(order.order_items) > 0:
+            order.status = OrderStatus.paid if target_status == OrderStatus.paid else OrderStatus.pending_cash
+            session.add(order)
+            
+    session.commit()
+    
+    # if NO pending orders remain for table, mark table unoccupied
+    pending_orders = session.exec(select(Order).where(Order.table_id == table_id).where(Order.status == OrderStatus.pending)).all()
+    if not pending_orders:
+        table = session.get(Table, table_id)
+        if table:
+            table.is_occupied = False
+            session.add(table)
+            session.commit()
+            
+    return {
+        "message": "Payment successful" if payment.method != "cash" else "Marked for cash payment", 
+        "paid_amount": round(paid_total, 2)
+    }
+
 # -----------------
 # AI Waiter Endpoint
 # -----------------
@@ -146,7 +208,7 @@ def ai_suggest(request: AISuggestionRequest, session: Session = Depends(get_sess
     if not menu_items:
         current_menu = "The menu is currently empty."
     else:
-        current_menu = "\n".join([f"- {item.name}: ${item.price} ({item.category.name if item.category else 'No Category'})" for item in menu_items])
+        current_menu = "\n".join([f"- {item.name}: ${item.price} ({item.category.name if item.category else 'No Category'})" + (f" - Ingredients/Info: {item.ingredients}" if item.ingredients else "") for item in menu_items])
         
     # Get suggestion from Groq AI
     reply = ai_service.get_suggestion(user_message=request.user_message, current_menu=current_menu)

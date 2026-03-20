@@ -2,6 +2,8 @@ import React from 'react';
 import { BrowserRouter, Routes, Route, Link } from 'react-router-dom';
 import MenuPage from './pages/MenuPage';
 import Checkout from './pages/Checkout';
+import TableBill from './pages/TableBill';
+import QRDashboard from './pages/QRDashboard';
 import ChatComponent from './components/ChatComponent';
 
 const QRLanding = () => (
@@ -21,12 +23,18 @@ const QRLanding = () => (
       {/* Helper for testing since we don't have real QRs in this demo */}
       <div className="mt-8 pt-6 border-t border-gray-100 dark:border-gray-700">
         <p className="text-xs text-gray-400 font-medium uppercase tracking-wider mb-3">Testing Simulator</p>
-        <div className="flex justify-center gap-2">
-          <Link to="/table/1" className="bg-red-50 text-red-600 hover:bg-red-100 px-4 py-2 rounded-lg font-bold transition-colors">
+        <div className="flex flex-col sm:flex-row justify-center gap-2">
+          <Link to="/table/1" className="bg-red-50 dark:bg-red-900/30 text-red-600 dark:text-red-400 hover:bg-red-100 dark:hover:bg-red-900/50 px-4 py-2 rounded-lg font-bold transition-colors">
             Scan Table 1
           </Link>
-          <Link to="/table/2" className="bg-red-50 text-red-600 hover:bg-red-100 px-4 py-2 rounded-lg font-bold transition-colors">
+          <Link to="/table/2" className="bg-red-50 dark:bg-red-900/30 text-red-600 dark:text-red-400 hover:bg-red-100 dark:hover:bg-red-900/50 px-4 py-2 rounded-lg font-bold transition-colors">
              Scan Table 2
+          </Link>
+        </div>
+        
+        <div className="mt-6">
+          <Link to="/admin/qrcodes" className="text-sm font-semibold text-gray-400 hover:text-gray-900 dark:hover:text-white transition-colors underline decoration-dashed underline-offset-4">
+            👨‍💼 Admin: Manage QR Codes
           </Link>
         </div>
       </div>
@@ -59,6 +67,8 @@ function App() {
             <Route path="/" element={<QRLanding />} />
             <Route path="/table/:tableId" element={<MenuPage />} />
             <Route path="/checkout/:orderId" element={<Checkout />} />
+            <Route path="/table/:tableId/bill" element={<TableBill />} />
+            <Route path="/admin/qrcodes" element={<QRDashboard />} />
           </Routes>
         </main>
 

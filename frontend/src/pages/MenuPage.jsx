@@ -1,22 +1,23 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import axios from 'axios';
-import { ShoppingCart, PlusCircle, MinusCircle, Loader2 } from 'lucide-react';
+import { ShoppingCart, PlusCircle, MinusCircle, Loader2, Receipt } from 'lucide-react';
+import { useNotification } from '../context/NotificationContext';
 
 const imageUrlMap = {
   "Margherita Pizza": "https://cdn.pixabay.com/photo/2017/12/10/14/47/pizaa-3010062_640.jpg",
   "Pepperoni Pizza": "https://images.unsplash.com/photo-1628840042765-356cda07504e?q=80&w=500",
-  "BBQ Chicken Pizza": "https://images.unsplash.com/photo-1513104890138-7c749659a591?q=80&w=500",
+  "BBQ Chicken Pizza": "https://media.istockphoto.com/id/1437998613/tr/foto%C4%9Fraf/round-ready-made-fresh-pizza-with-dark-sauce-chicken-with-barbecue-sauce-lies-in-the-box.jpg?s=2048x2048&w=is&k=20&c=wwftsgFxSMQedzhDU2L4Ser7nS8uCwcSS2kH3jGU3LE=",
   "Classic Cheeseburger": "https://images.unsplash.com/photo-1568901346375-23c9450c58cd?q=80&w=500",
   "Mushroom Swiss Burger": "https://images.unsplash.com/photo-1550547660-d9450f859349?q=80&w=500",
   "Spaghetti Carbonara": "https://images.unsplash.com/photo-1612874742237-6526221588e3?q=80&w=500",
-  "Penne Arrabbiata": "https://images.unsplash.com/photo-1595295333158-4742f28fbd85?q=80&w=500",
+  "Penne Arrabbiata": "https://media.gettyimages.com/id/1170464385/photo/penne-with-tomato-sauce-and-pork.jpg?s=612x612&w=gi&k=20&c=vSFgKLodGCCBtoghOdR6gHqpzKHFkBO0jIdmqdr1Lb4=",
   "Grilled Chicken Breast": "https://images.unsplash.com/photo-1532550907401-a500c9a57435?q=80&w=500",
   "Ribeye Steak": "https://images.unsplash.com/photo-1600891964092-4316c288032e?q=80&w=500",
   "Grilled Salmon": "https://images.unsplash.com/photo-1467003909585-2f8a72700288?q=80&w=500",
   "Caesar Salad": "https://images.unsplash.com/photo-1550304943-4f24f54ddde9?q=80&w=500",
   "Tomato Soup": "https://images.unsplash.com/photo-1547592166-23ac45744acd?q=80&w=500",
-  "Bruschetta": "https://images.unsplash.com/photo-1572656631137-7935297eff55?q=80&w=500",
+  "Bruschetta": "https://media.gettyimages.com/id/1256444154/photo/bruschetta-bruschetta-with-cherry-tomatoes-crostini-bruschetta.jpg?s=1024x1024&w=gi&k=20&c=WUixx4Z5KH8mrNWKePMveT_PmmIrY5-RIlp6AnpYuZk=",
   "Mozzarella Sticks": "https://media.istockphoto.com/id/1405214770/tr/foto%C4%9Fraf/deep-fried-mozzarella-cheese-sticks-with-tomato-ketchup-and-mayo-dip-served-in-a-dish.jpg?s=2048x2048&w=is&k=20&c=Dn5mYyTYbZiTpxkL14GlNGifnM7NemCyd9bHhmZ8PSw=",
   "Hummus Plate": "https://media.istockphoto.com/id/1220638760/tr/foto%C4%9Fraf/ev-yap%C4%B1m%C4%B1-humus.jpg?s=2048x2048&w=is&k=20&c=8wCFvU1xWlHJHbTDRfzUmfT07NCpDRcRmC-gKihQ2lE=",
   "French Fries": "https://images.unsplash.com/photo-1630384060421-cb20d0e0649d?q=80&w=500",
@@ -29,10 +30,10 @@ const imageUrlMap = {
   "Lemonade": "https://images.unsplash.com/photo-1513558161293-cdaf765ed2fd?q=80&w=500",
   "Iced Coffee": "https://images.unsplash.com/photo-1517701604599-bb29b565090c?q=80&w=500",
   "Orange Juice": "https://images.unsplash.com/photo-1613478223719-2ab802602423?q=80&w=500",
-  "Water": "https://media.istockphoto.com/id/1353351865/tr/foto%C4%9Fraf/shochu-and-snacks-placed-on-a-black-wood-grain-background.jpg?s=2048x2048&w=is&k=20&c=L-uopDX-v2uoO-xc1f8n3Ksw48tbkssDO5hBcmQyibs=",
+  "Water": "https://media.gettyimages.com/id/185267353/photo/backlit-plastic-water-bottle-isolated-on-white.jpg?s=2048x2048&w=gi&k=20&c=Yf7WnZYNT7DqRDqeD-q1tBqq9MARFvXuzOI3fbkTnoE=",
   "Chocolate Brownie": "https://images.unsplash.com/photo-1606313564200-e75d5e30476c?q=80&w=500",
   "Tiramisu": "https://images.unsplash.com/photo-1571877227200-a0d98ea607e9?q=80&w=500",
-  "Cheesecake": "https://images.unsplash.com/photo-1533134242443-d4fd215305ad?q=80&w=500",
+  "Blueberry Cheesecake": "https://images.unsplash.com/photo-1533134242443-d4fd215305ad?q=80&w=500",
   "Apple Pie": "https://images.unsplash.com/photo-1568571780765-9276ac8b75a2?q=80&w=500",
 };
 
@@ -45,7 +46,8 @@ const MenuPage = () => {
   const [categories, setCategories] = useState([]);
   const [selectedCategory, setSelectedCategory] = useState("all");
   const [loading, setLoading] = useState(true);
-  
+  const { showNotification } = useNotification();
+
   // Local cart state for multi-user support
   const [cart, setCart] = useState([]);
   const [isOrdering, setIsOrdering] = useState(false);
@@ -57,23 +59,23 @@ const MenuPage = () => {
   const fetchMenuData = async () => {
     try {
       const [menuRes, catRes] = await Promise.all([
-        axios.get('http://127.0.0.1:8000/menu-items'),
-        axios.get('http://127.0.0.1:8000/categories')
+        axios.get(`http://${window.location.hostname}:8000/menu-items`),
+        axios.get(`http://${window.location.hostname}:8000/categories`)
       ]);
-      
+
       const catMap = {};
       catRes.data.forEach(c => catMap[c.id] = c.name);
-      
+
       const itemsWithCategory = menuRes.data.map(item => ({
         ...item,
         categoryName: catMap[item.category_id] || "Other"
       }));
-      
+
       setMenuItems(itemsWithCategory);
       setCategories(catRes.data);
     } catch (err) {
       console.error(err);
-      alert('Failed to load menu data.');
+      showNotification('Failed to load menu data.', 'error');
     } finally {
       setLoading(false);
     }
@@ -83,19 +85,20 @@ const MenuPage = () => {
     setCart((prevCart) => {
       const existingItem = prevCart.find((i) => i.id === item.id);
       if (existingItem) {
-        return prevCart.map((i) => 
+        return prevCart.map((i) =>
           i.id === item.id ? { ...i, qty: i.qty + 1 } : i
         );
       }
       return [...prevCart, { ...item, qty: 1 }];
     });
+    showNotification(`${item.name} added to cart.`, 'success');
   };
 
   const removeFromCart = (itemId) => {
     setCart((prevCart) => {
       const existingItem = prevCart.find((i) => i.id === itemId);
       if (existingItem && existingItem.qty > 1) {
-        return prevCart.map((i) => 
+        return prevCart.map((i) =>
           i.id === itemId ? { ...i, qty: i.qty - 1 } : i
         );
       }
@@ -114,20 +117,24 @@ const MenuPage = () => {
   const handlePlaceOrder = async () => {
     if (cart.length === 0) return;
     setIsOrdering(true);
-    
+
     try {
-      const orderRes = await axios.post(`http://127.0.0.1:8000/orders?table_id=${tableId}`);
+      const orderRes = await axios.post(`http://${window.location.hostname}:8000/orders?table_id=${tableId}`);
       const orderId = orderRes.data.id;
 
       for (const item of cart) {
-        await axios.post(`http://127.0.0.1:8000/orders/${orderId}/items?menu_item_id=${item.id}&quantity=${item.qty}`);
+        // Sepetteki üründen kaç tane (qty) varsa, her biri için ayrı sipariş satırı (order item) oluşturuyoruz.
+        // Böylece 3 patates şipariş edildiğinde masada 3 farklı "1 Adet Patates" görünür ve ayrı ayrı ödenebilir.
+        for (let i = 0; i < item.qty; i++) {
+          await axios.post(`http://${window.location.hostname}:8000/orders/${orderId}/items?menu_item_id=${item.id}&quantity=1`);
+        }
       }
 
       setCart([]);
-      navigate(`/checkout/${orderId}`);
+      showNotification('Order sent to the kitchen! You can pay when you are ready.', 'success');
     } catch (err) {
       console.error('Error placing order:', err);
-      alert('Could not place order. Please check the console for details.');
+      showNotification('Could not place order. Please try again.', 'error');
     } finally {
       setIsOrdering(false);
     }
@@ -141,15 +148,22 @@ const MenuPage = () => {
     );
   }
 
-  const filteredItems = selectedCategory === "all" 
-    ? menuItems 
+  const filteredItems = selectedCategory === "all"
+    ? menuItems
     : menuItems.filter(item => item.categoryName === selectedCategory);
 
   const totalItems = getTotalCartItems();
 
   return (
     <div className="page-container pb-32">
-      <div className="mb-4 pt-4 text-center">
+      <div className="mb-4 pt-4 text-center relative">
+        <button
+          onClick={() => navigate(`/table/${tableId}/bill`)}
+          className="absolute right-0 sm:right-4 top-4 bg-gray-900 dark:bg-gray-100 text-white dark:text-gray-900 px-4 py-2 rounded-xl text-sm font-bold shadow-lg hover:scale-105 transition-transform flex items-center space-x-2"
+        >
+          <Receipt size={16} />
+          <span className="hidden sm:inline">Shared Bill (Pay)</span>
+        </button>
         <div className="inline-block bg-red-100 text-red-600 px-4 py-1.5 rounded-full font-bold text-sm tracking-widest uppercase mb-3">
           Table {tableId}
         </div>
@@ -159,14 +173,14 @@ const MenuPage = () => {
       </div>
 
       <div className="category-slider">
-        <button 
+        <button
           className={`cat-btn ${selectedCategory === 'all' ? 'active' : ''}`}
           onClick={() => setSelectedCategory('all')}
         >
           All
         </button>
         {categories.map((cat) => (
-          <button 
+          <button
             key={cat.id}
             className={`cat-btn ${selectedCategory === cat.name ? 'active' : ''}`}
             onClick={() => setSelectedCategory(cat.name)}
@@ -180,25 +194,32 @@ const MenuPage = () => {
         {filteredItems.map(item => {
           const qty = getCartQuantity(item.id);
           const imgUrl = imageUrlMap[item.name] || DEFAULT_IMAGE;
-          
+
           return (
             <div key={item.id} className="menu-card fade-in relative">
               <img src={imgUrl} alt={item.name} />
-              <div className="info flex flex-col">
+              <div className="info flex flex-col text-left">
                 <span className="category-tag">{item.categoryName}</span>
-                <h3 className="flex-grow">{item.name}</h3>
-                <p className="price">${item.price.toFixed(2)}</p>
-                
+                <h3 className="mb-1 font-bold text-gray-800 dark:text-gray-100">{item.name}</h3>
+                {item.ingredients && (
+                  <p className="text-[11px] text-gray-500 dark:text-gray-400 mb-4 flex-grow leading-snug">
+                    {item.ingredients}
+                  </p>
+                )}
+                <div className="mt-auto">
+                  <p className="price">${item.price.toFixed(2)}</p>
+                </div>
+
                 {qty > 0 ? (
                   <div className="mt-4 flex items-center justify-between border border-gray-200 dark:border-gray-600 rounded-xl p-1 bg-gray-50 dark:bg-gray-700/30">
-                    <button 
+                    <button
                       onClick={(e) => { e.stopPropagation(); removeFromCart(item.id); }}
                       className="p-2 text-red-500 hover:text-red-700 hover:bg-red-50 dark:hover:bg-red-900/30 rounded-lg transition-colors cursor-pointer"
                     >
                       <MinusCircle size={20} />
                     </button>
                     <span className="font-bold w-8 text-center text-gray-900 dark:text-white">{qty}</span>
-                    <button 
+                    <button
                       onClick={(e) => { e.stopPropagation(); addToCart(item); }}
                       className="p-2 text-green-600 hover:text-green-700 hover:bg-green-50 dark:hover:bg-green-900/30 rounded-lg transition-colors cursor-pointer"
                     >
