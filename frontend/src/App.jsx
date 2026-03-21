@@ -47,7 +47,7 @@ function App() {
     <BrowserRouter>
       <div className="min-h-screen bg-gray-50 dark:bg-gray-900 transition-colors duration-200 font-sans text-gray-900 dark:text-gray-100 flex flex-col">
         {/* Header */}
-        <header className="bg-red-600 dark:bg-red-800 text-white p-4 sm:p-6 shadow-md z-10 sticky top-0">
+        <header className="bg-red-600 dark:bg-red-800 text-white p-4 sm:p-6 shadow-md z-40 sticky top-0">
           <div className="container mx-auto flex items-center justify-between">
             <Link to="/" className="group flex items-center space-x-2">
               <div className="bg-white text-red-600 font-black rounded-lg p-1.5 px-3 transform group-hover:-rotate-3 transition-transform">

@@ -46,10 +46,23 @@ const NotificationItem = ({ notification, onClose }) => {
   const [isClosing, setIsClosing] = useState(false);
 
   useEffect(() => {
+<<<<<<< Updated upstream
+=======
+<<<<<<< HEAD
+    // 2 seconds timeout then start closing animation
+    const timer = setTimeout(() => {
+      setIsClosing(true);
+    }, 2000);
+=======
+>>>>>>> Stashed changes
     // 5.5 seconds timeout then start closing animation
     const timer = setTimeout(() => {
       setIsClosing(true);
     }, 5500);
+<<<<<<< Updated upstream
+=======
+>>>>>>> fc23f1b2b2de1913e8741bd8e5206652ecf1659b
+>>>>>>> Stashed changes
 
     return () => clearTimeout(timer);
   }, []);
@@ -105,7 +118,15 @@ const NotificationItem = ({ notification, onClose }) => {
       </button>
       
       {/* Progress Bar */}
+<<<<<<< Updated upstream
       <div className="absolute bottom-0 left-0 h-1 bg-black/10 dark:bg-white/10 w-full rounded-b-xl origin-left" style={{ animation: `progress 5.5s linear forwards` }}></div>
+=======
+<<<<<<< HEAD
+      <div className="absolute bottom-0 left-0 h-1 bg-black/10 dark:bg-white/10 w-full rounded-b-xl origin-left" style={{ animation: `progress 2s linear forwards` }}></div>
+=======
+      <div className="absolute bottom-0 left-0 h-1 bg-black/10 dark:bg-white/10 w-full rounded-b-xl origin-left" style={{ animation: `progress 5.5s linear forwards` }}></div>
+>>>>>>> fc23f1b2b2de1913e8741bd8e5206652ecf1659b
+>>>>>>> Stashed changes
     </div>
   );
 };
@@ -115,7 +136,19 @@ export const NotificationProvider = ({ children }) => {
 
   const showNotification = useCallback((message, type = 'info') => {
     const id = Date.now().toString() + Math.random().toString(36).substring(2, 9);
+<<<<<<< Updated upstream
     setNotifications(prev => [...prev, { id, message, type }]);
+=======
+<<<<<<< HEAD
+    setNotifications(prev => {
+      const newNotifications = [...prev, { id, message, type }];
+      // Maximum of 3 notifications at a time to prevent blocking the screen
+      return newNotifications.slice(-3);
+    });
+=======
+    setNotifications(prev => [...prev, { id, message, type }]);
+>>>>>>> fc23f1b2b2de1913e8741bd8e5206652ecf1659b
+>>>>>>> Stashed changes
   }, []);
 
   const removeNotification = useCallback((id) => {

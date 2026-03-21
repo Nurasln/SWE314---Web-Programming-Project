@@ -31,7 +31,15 @@ const ChatComponent = () => {
     setIsLoading(true);
 
     try {
+<<<<<<< Updated upstream
       const response = await axios.post(`http://${window.location.hostname}:8000/ai/suggest`, {
+=======
+<<<<<<< HEAD
+      const response = await axios.post(`/api/ai/suggest`, {
+=======
+      const response = await axios.post(`http://${window.location.hostname}:8000/ai/suggest`, {
+>>>>>>> fc23f1b2b2de1913e8741bd8e5206652ecf1659b
+>>>>>>> Stashed changes
         user_message: userMessage
       });
       

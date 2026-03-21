@@ -1,0 +1,91 @@
+﻿.\venv\Scripts\python.e
+xe : Traceback (most re
+cent call last):
+At line:1 char:1
++ .\venv\Scripts\python
+.exe test_models.py > e
+rror.txt 2>&1 ; Out-Fil
+e  ...
++ ~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~
+    + CategoryInfo     
+         : NotSpecifi  
+  ed: (Traceback (mo   
+ st recent call las    
+t)::String) [], Re    m
+oteException
+    + FullyQualifiedEr 
+   rorId : NativeComm  
+  andError
+ 
+  File "C:\Users\nuras\
+Desktop\SWE314---Web-Pr
+ogramming-Project-main\
+backend\test_models.py"
+, line 5, in <module>
+    import models
+  File "C:\Users\nuras\
+Desktop\SWE314---Web-Pr
+ogramming-Project-main\
+backend\models.py", lin
+e 10, in <module>
+    class Table(SQLMode
+l, table=True):
+    ...<2 lines>...
+        is_occupied: bo
+ol = Field(default=Fals
+e)
+  File "C:\Users\nuras\
+Desktop\SWE314---Web-Pr
+ogramming-Project-main\
+backend\venv\Lib\site-p
+ackages\sqlmodel\main.p
+y", line 451, in __new_
+_
+    new_cls = super()._
+_new__(cls, name, bases
+, dict_used, **config_k
+wargs)
+  File "C:\Users\nuras\
+Desktop\SWE314---Web-Pr
+ogramming-Project-main\
+backend\venv\Lib\site-p
+ackages\pydantic\_inter
+nal\_model_construction
+.py", line 132, in __ne
+w__
+    private_attributes 
+= inspect_namespace(
+        namespace, raw_
+annotations, config_wra
+pper.ignored_types, cla
+ss_vars, base_field_nam
+es
+    )
+  File "C:\Users\nuras\
+Desktop\SWE314---Web-Pr
+ogramming-Project-main\
+backend\venv\Lib\site-p
+ackages\pydantic\_inter
+nal\_model_construction
+.py", line 477, in insp
+ect_namespace
+    raise PydanticUserE
+rror(
+        f'Field {var_na
+me!r} requires a type a
+nnotation', code='model
+-field-missing-annotati
+on'
+    )
+pydantic.errors.Pydanti
+cUserError: Field 'id' 
+requires a type annotat
+ion
+
+For further information
+ visit https://errors.p
+ydantic.dev/2.12/u/mode
+l-field-missing-annotat
+ion

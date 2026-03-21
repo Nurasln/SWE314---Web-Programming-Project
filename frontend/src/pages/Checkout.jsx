@@ -19,7 +19,15 @@ const Checkout = () => {
   const fetchBillInfo = async (people) => {
     try {
       setLoading(true);
+<<<<<<< Updated upstream
       const response = await axios.get(`http://${window.location.hostname}:8000/orders/${orderId}/split-bill?num_people=${people}`);
+=======
+<<<<<<< HEAD
+      const response = await axios.get(`/api/orders/${orderId}/split-bill?num_people=${people}`);
+=======
+      const response = await axios.get(`http://${window.location.hostname}:8000/orders/${orderId}/split-bill?num_people=${people}`);
+>>>>>>> fc23f1b2b2de1913e8741bd8e5206652ecf1659b
+>>>>>>> Stashed changes
       setBillData(response.data);
     } catch (err) {
       console.error(err);

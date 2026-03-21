@@ -38,8 +38,18 @@ def seed_database():
 
         # Menu Items
         raw_items = [
+<<<<<<< Updated upstream
             {"name": "Margherita Pizza", "price": 12.50, "category": "Mains", "ingredients": "Tomato sauce, mozzarella cheese, fresh basil. (Vegetarian)"},
             {"name": "Pepperoni Pizza", "price": 14.00, "category": "Mains", "ingredients": "Tomato sauce, mozzarella cheese, pepperoni slices."},
+=======
+<<<<<<< HEAD
+            {"name": "Pepperoni Pizza", "price": 14.00, "category": "Mains", "ingredients": "Tomato sauce, mozzarella cheese, pepperoni slices."},
+            {"name": "Margherita Pizza", "price": 12.50, "category": "Mains", "ingredients": "Tomato sauce, mozzarella cheese, fresh basil. (Vegetarian)"},
+=======
+            {"name": "Margherita Pizza", "price": 12.50, "category": "Mains", "ingredients": "Tomato sauce, mozzarella cheese, fresh basil. (Vegetarian)"},
+            {"name": "Pepperoni Pizza", "price": 14.00, "category": "Mains", "ingredients": "Tomato sauce, mozzarella cheese, pepperoni slices."},
+>>>>>>> fc23f1b2b2de1913e8741bd8e5206652ecf1659b
+>>>>>>> Stashed changes
             {"name": "BBQ Chicken Pizza", "price": 15.50, "category": "Mains", "ingredients": "BBQ sauce, mozzarella cheese, grilled chicken, red onions."},
             {"name": "Classic Cheeseburger", "price": 10.99, "category": "Mains", "ingredients": "Beef patty, cheddar cheese, lettuce, tomato, pickles, burger bun. (Contains Gluten, Dairy)"},
             {"name": "Mushroom Swiss Burger", "price": 12.50, "category": "Mains", "ingredients": "Beef patty, Swiss cheese, sautéed mushrooms, red onions, burger bun. (Contains Gluten, Dairy)"},

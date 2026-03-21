@@ -12,7 +12,15 @@ const QRDashboard = () => {
 
   // We want to generate the absolute URL of the current frontend host
   const getBaseUrl = () => {
+<<<<<<< Updated upstream
     return window.location.origin;
+=======
+<<<<<<< HEAD
+    return 'http://192.168.0.105:5173';
+=======
+    return window.location.origin;
+>>>>>>> fc23f1b2b2de1913e8741bd8e5206652ecf1659b
+>>>>>>> Stashed changes
   };
 
   useEffect(() => {
@@ -21,7 +29,15 @@ const QRDashboard = () => {
 
   const fetchTables = async () => {
     try {
+<<<<<<< Updated upstream
       const res = await axios.get(`http://${window.location.hostname}:8000/tables`);
+=======
+<<<<<<< HEAD
+      const res = await axios.get(`/api/tables`);
+=======
+      const res = await axios.get(`http://${window.location.hostname}:8000/tables`);
+>>>>>>> fc23f1b2b2de1913e8741bd8e5206652ecf1659b
+>>>>>>> Stashed changes
       setTables(res.data);
     } catch (err) {
       console.error(err);

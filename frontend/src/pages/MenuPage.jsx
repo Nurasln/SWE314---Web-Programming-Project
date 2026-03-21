@@ -1,7 +1,15 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import axios from 'axios';
+<<<<<<< Updated upstream
 import { ShoppingCart, PlusCircle, MinusCircle, Loader2, Receipt } from 'lucide-react';
+=======
+<<<<<<< HEAD
+import { ShoppingCart, PlusCircle, MinusCircle, Loader2, Receipt, Trash2 } from 'lucide-react';
+=======
+import { ShoppingCart, PlusCircle, MinusCircle, Loader2, Receipt } from 'lucide-react';
+>>>>>>> fc23f1b2b2de1913e8741bd8e5206652ecf1659b
+>>>>>>> Stashed changes
 import { useNotification } from '../context/NotificationContext';
 
 const imageUrlMap = {
@@ -51,6 +59,8 @@ const MenuPage = () => {
   // Local cart state for multi-user support
   const [cart, setCart] = useState([]);
   const [isOrdering, setIsOrdering] = useState(false);
+  const [showConfirmModal, setShowConfirmModal] = useState(false);
+  const [cartShake, setCartShake] = useState(false);
 
   useEffect(() => {
     fetchMenuData();
@@ -59,8 +69,18 @@ const MenuPage = () => {
   const fetchMenuData = async () => {
     try {
       const [menuRes, catRes] = await Promise.all([
+<<<<<<< Updated upstream
         axios.get(`http://${window.location.hostname}:8000/menu-items`),
         axios.get(`http://${window.location.hostname}:8000/categories`)
+=======
+<<<<<<< HEAD
+        axios.get(`/api/menu-items`),
+        axios.get(`/api/categories`)
+=======
+        axios.get(`http://${window.location.hostname}:8000/menu-items`),
+        axios.get(`http://${window.location.hostname}:8000/categories`)
+>>>>>>> fc23f1b2b2de1913e8741bd8e5206652ecf1659b
+>>>>>>> Stashed changes
       ]);
 
       const catMap = {};
@@ -91,7 +111,23 @@ const MenuPage = () => {
       }
       return [...prevCart, { ...item, qty: 1 }];
     });
+<<<<<<< Updated upstream
     showNotification(`${item.name} added to cart.`, 'success');
+=======
+<<<<<<< HEAD
+    
+    // Trigger the cart button scaling animation
+    setCartShake(true);
+    setTimeout(() => setCartShake(false), 250);
+
+    // Only display toast notifications on desktop
+    if (window.innerWidth >= 640) {
+      showNotification(`${item.name} added to cart.`, 'success');
+    }
+=======
+    showNotification(`${item.name} added to cart.`, 'success');
+>>>>>>> fc23f1b2b2de1913e8741bd8e5206652ecf1659b
+>>>>>>> Stashed changes
   };
 
   const removeFromCart = (itemId) => {
@@ -102,7 +138,17 @@ const MenuPage = () => {
           i.id === itemId ? { ...i, qty: i.qty - 1 } : i
         );
       }
-      return prevCart.filter((i) => i.id !== itemId);
+      const newCart = prevCart.filter((i) => i.id !== itemId);
+      if (newCart.length === 0) setShowConfirmModal(false);
+      return newCart;
+    });
+  };
+
+  const deleteFromCart = (itemId) => {
+    setCart((prevCart) => {
+      const newCart = prevCart.filter((i) => i.id !== itemId);
+      if (newCart.length === 0) setShowConfirmModal(false);
+      return newCart;
     });
   };
 
@@ -114,23 +160,46 @@ const MenuPage = () => {
   const getTotalCartItems = () => cart.reduce((total, item) => total + item.qty, 0);
   const getTotalCartPrice = () => cart.reduce((total, item) => total + (item.price * item.qty), 0);
 
-  const handlePlaceOrder = async () => {
+  const handleConfirmOrder = async () => {
     if (cart.length === 0) return;
     setIsOrdering(true);
 
     try {
+<<<<<<< Updated upstream
       const orderRes = await axios.post(`http://${window.location.hostname}:8000/orders?table_id=${tableId}`);
+=======
+<<<<<<< HEAD
+      const orderRes = await axios.post(`/api/orders?table_id=${tableId}`);
+=======
+      const orderRes = await axios.post(`http://${window.location.hostname}:8000/orders?table_id=${tableId}`);
+>>>>>>> fc23f1b2b2de1913e8741bd8e5206652ecf1659b
+>>>>>>> Stashed changes
       const orderId = orderRes.data.id;
 
       for (const item of cart) {
         // Sepetteki üründen kaç tane (qty) varsa, her biri için ayrı sipariş satırı (order item) oluşturuyoruz.
         // Böylece 3 patates şipariş edildiğinde masada 3 farklı "1 Adet Patates" görünür ve ayrı ayrı ödenebilir.
         for (let i = 0; i < item.qty; i++) {
+<<<<<<< Updated upstream
           await axios.post(`http://${window.location.hostname}:8000/orders/${orderId}/items?menu_item_id=${item.id}&quantity=1`);
+=======
+<<<<<<< HEAD
+          await axios.post(`/api/orders/${orderId}/items?menu_item_id=${item.id}&quantity=1`);
+=======
+          await axios.post(`http://${window.location.hostname}:8000/orders/${orderId}/items?menu_item_id=${item.id}&quantity=1`);
+>>>>>>> fc23f1b2b2de1913e8741bd8e5206652ecf1659b
+>>>>>>> Stashed changes
         }
       }
 
       setCart([]);
+<<<<<<< Updated upstream
+=======
+<<<<<<< HEAD
+      setShowConfirmModal(false);
+=======
+>>>>>>> fc23f1b2b2de1913e8741bd8e5206652ecf1659b
+>>>>>>> Stashed changes
       showNotification('Order sent to the kitchen! You can pay when you are ready.', 'success');
     } catch (err) {
       console.error('Error placing order:', err);
@@ -154,15 +223,35 @@ const MenuPage = () => {
 
   const totalItems = getTotalCartItems();
 
+  const handleCategorySelect = (category) => {
+    setSelectedCategory(category);
+    setTimeout(() => {
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }, 100); // Wait for React to render the new list so the browser doesn't block the scroll
+  };
+
   return (
     <div className="page-container pb-32">
       <div className="mb-4 pt-4 text-center relative">
         <button
           onClick={() => navigate(`/table/${tableId}/bill`)}
+<<<<<<< Updated upstream
+=======
+<<<<<<< HEAD
+          className="fixed z-50 right-4 top-4 sm:right-8 sm:top-6 bg-gray-900 dark:bg-white text-white dark:text-gray-900 p-3 sm:px-5 sm:py-3 rounded-full shadow-[0_10px_30px_rgba(0,0,0,0.3)] hover:scale-105 transition-all flex items-center space-x-2 cursor-pointer ring-4 ring-white/50 dark:ring-black/50"
+        >
+          <Receipt size={20} />
+          <span className="hidden sm:inline text-base">Shared Bill (Pay)</span>
+=======
+>>>>>>> Stashed changes
           className="absolute right-0 sm:right-4 top-4 bg-gray-900 dark:bg-gray-100 text-white dark:text-gray-900 px-4 py-2 rounded-xl text-sm font-bold shadow-lg hover:scale-105 transition-transform flex items-center space-x-2"
         >
           <Receipt size={16} />
           <span className="hidden sm:inline">Shared Bill (Pay)</span>
+<<<<<<< Updated upstream
+=======
+>>>>>>> fc23f1b2b2de1913e8741bd8e5206652ecf1659b
+>>>>>>> Stashed changes
         </button>
         <div className="inline-block bg-red-100 text-red-600 px-4 py-1.5 rounded-full font-bold text-sm tracking-widest uppercase mb-3">
           Table {tableId}
@@ -175,7 +264,7 @@ const MenuPage = () => {
       <div className="category-slider">
         <button
           className={`cat-btn ${selectedCategory === 'all' ? 'active' : ''}`}
-          onClick={() => setSelectedCategory('all')}
+          onClick={() => handleCategorySelect('all')}
         >
           All
         </button>
@@ -183,7 +272,7 @@ const MenuPage = () => {
           <button
             key={cat.id}
             className={`cat-btn ${selectedCategory === cat.name ? 'active' : ''}`}
-            onClick={() => setSelectedCategory(cat.name)}
+            onClick={() => handleCategorySelect(cat.name)}
           >
             {cat.name}
           </button>
@@ -199,7 +288,27 @@ const MenuPage = () => {
             <div key={item.id} className="menu-card fade-in relative">
               <img src={imgUrl} alt={item.name} />
               <div className="info flex flex-col text-left">
+<<<<<<< Updated upstream
                 <span className="category-tag">{item.categoryName}</span>
+=======
+<<<<<<< HEAD
+                <div className="flex items-center flex-wrap gap-2 mb-2">
+                  <span className="category-tag !mb-0">{item.categoryName}</span>
+                  {item.ingredients && item.ingredients.includes("Gluten-Free") && (
+                    <span className="bg-amber-50 dark:bg-amber-900/40 border border-amber-200 dark:border-amber-700 text-amber-700 dark:text-amber-300 text-[10px] font-bold px-2 py-0.5 rounded-full flex items-center gap-1 shadow-sm" title="Gluten-Free">
+                      🌾 <span className="tracking-wide">GF</span>
+                    </span>
+                  )}
+                  {item.ingredients && (item.ingredients.includes("Vegan") || item.ingredients.toLowerCase().includes("lactose-free") || item.ingredients.toLowerCase().includes("dairy-free")) && (
+                    <span className="bg-sky-50 dark:bg-sky-900/40 border border-sky-200 dark:border-sky-700 text-sky-700 dark:text-sky-300 text-[10px] font-bold px-2 py-0.5 rounded-full flex items-center gap-1 shadow-sm" title="Lactose-Free">
+                      🥛 <span className="tracking-wide">LF</span>
+                    </span>
+                  )}
+                </div>
+=======
+                <span className="category-tag">{item.categoryName}</span>
+>>>>>>> fc23f1b2b2de1913e8741bd8e5206652ecf1659b
+>>>>>>> Stashed changes
                 <h3 className="mb-1 font-bold text-gray-800 dark:text-gray-100">{item.name}</h3>
                 {item.ingredients && (
                   <p className="text-[11px] text-gray-500 dark:text-gray-400 mb-4 flex-grow leading-snug">
@@ -242,9 +351,9 @@ const MenuPage = () => {
       </div>
 
       {totalItems > 0 && (
-        <div className="fixed bottom-[6.5rem] right-6 sm:bottom-6 sm:right-auto sm:left-1/2 sm:-translate-x-1/2 z-40 animate-bounce-short">
+        <div className={`fixed bottom-[6.5rem] right-6 sm:bottom-6 sm:right-auto sm:left-1/2 sm:-translate-x-1/2 z-40 transition-transform duration-200 ease-out origin-center ${cartShake ? 'scale-110' : 'scale-100'}`}>
           <button
-            onClick={handlePlaceOrder}
+            onClick={() => setShowConfirmModal(true)}
             disabled={isOrdering}
             className="bg-black dark:bg-white text-white dark:text-black py-3.5 px-6 rounded-full shadow-2xl flex items-center space-x-4 hover:scale-105 transition-transform disabled:opacity-80 disabled:hover:scale-100 cursor-pointer"
           >
@@ -260,6 +369,55 @@ const MenuPage = () => {
               {totalItems} <span className="text-xs ml-1 opacity-80 font-normal">(${(getTotalCartPrice()).toFixed(2)})</span>
             </div>
           </button>
+        </div>
+      )}
+
+      {/* Confirmation Modal */}
+      {showConfirmModal && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4 animate-fade-in">
+          <div className="bg-white dark:bg-gray-800 rounded-3xl p-6 max-w-sm w-full shadow-2xl z-[101]">
+            <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-4 text-center">Confirm Your Order</h3>
+            <div className="max-h-60 overflow-y-auto mb-4 border-b border-gray-100 dark:border-gray-700 pb-4 space-y-3">
+              {cart.map((item, idx) => (
+                <div key={idx} className="flex justify-between items-center bg-gray-50 dark:bg-gray-700/30 p-2.5 rounded-xl border border-gray-100 dark:border-gray-600">
+                  <div className="flex flex-col">
+                    <span className="font-semibold text-gray-800 dark:text-gray-200 text-sm">{item.qty}x {item.name}</span>
+                    <span className="text-xs text-gray-500">${item.price.toFixed(2)} each</span>
+                  </div>
+                  <div className="flex items-center space-x-3">
+                    <span className="font-bold text-gray-900 dark:text-white">${(item.price * item.qty).toFixed(2)}</span>
+                    <button 
+                      onClick={() => deleteFromCart(item.id)}
+                      className="p-1.5 text-red-500 hover:text-red-700 hover:bg-red-100 dark:hover:bg-red-900/40 rounded-lg transition-colors cursor-pointer"
+                      title="Remove Item"
+                    >
+                      <Trash2 size={16} />
+                    </button>
+                  </div>
+                </div>
+              ))}
+            </div>
+            <div className="flex justify-between items-center mb-6 px-1">
+              <span className="font-bold text-gray-700 dark:text-gray-400">Total:</span>
+              <span className="text-2xl font-black text-red-600 dark:text-red-400">${getTotalCartPrice().toFixed(2)}</span>
+            </div>
+            <div className="flex space-x-3">
+              <button 
+                onClick={() => setShowConfirmModal(false)}
+                disabled={isOrdering}
+                className="flex-1 bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 py-3 rounded-xl font-bold hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors cursor-pointer"
+              >
+                Cancel
+              </button>
+              <button 
+                onClick={handleConfirmOrder}
+                disabled={isOrdering}
+                className="flex-1 bg-red-600 text-white py-3 rounded-xl font-bold flex justify-center items-center space-x-2 hover:bg-red-700 transition-colors shadow-lg shadow-red-600/30 cursor-pointer"
+              >
+                {isOrdering ? <Loader2 className="animate-spin" size={18} /> : <span>Approve</span>}
+              </button>
+            </div>
+          </div>
         </div>
       )}
     </div>

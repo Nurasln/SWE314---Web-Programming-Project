@@ -12,17 +12,28 @@
 /* --- KATEGORİ SLIDER (TABLAR) --- */
 .category-slider {
     display: flex;
-    justify-content: center;
-    gap: 15px;
+    justify-content: flex-start;
+    gap: 10px;
     overflow-x: auto;
-    padding: 15px 10px;
-    margin-bottom: 40px;
+    padding: 12px 16px;
+    margin-bottom: 24px;
     position: sticky;
-    top: 80px;
+    top: 72px;
     background: rgba(252, 252, 252, 0.95);
     backdrop-filter: blur(5px);
     z-index: 10;
     border-bottom: 1px solid #eee;
+    -webkit-overflow-scrolling: touch;
+}
+
+@media (min-width: 640px) {
+    .category-slider {
+        justify-content: center;
+        gap: 15px;
+        padding: 15px 10px;
+        margin-bottom: 40px;
+        top: 90px;
+    }
 }
 
 .category-slider::-webkit-scrollbar { display: none; }
@@ -30,14 +41,29 @@
 .cat-btn {
     background: white;
     border: 2px solid #dc2626;
+<<<<<<< Updated upstream
+=======
+<<<<<<< HEAD
+    padding: 8px 16px;
+=======
+>>>>>>> Stashed changes
     padding: 12px 28px;
+>>>>>>> fc23f1b2b2de1913e8741bd8e5206652ecf1659b
     border-radius: 50px;
     cursor: pointer;
     font-weight: 600;
     color: #dc2626;
     transition: all 0.3s ease;
     white-space: nowrap;
-    font-size: 1rem;
+    font-size: 0.85rem;
+    flex-shrink: 0;
+}
+
+@media (min-width: 640px) {
+    .cat-btn {
+        padding: 12px 28px;
+        font-size: 1rem;
+    }
 }
 
 .cat-btn.active, .cat-btn:hover {
