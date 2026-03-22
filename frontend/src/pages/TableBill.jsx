@@ -13,7 +13,7 @@ const TableBill = () => {
   const [loading, setLoading] = useState(true);
   const [paying, setPaying] = useState(false);
   const { showNotification } = useNotification();
-  
+
   const [paymentMethod, setPaymentMethod] = useState('card');
   const [showCardModal, setShowCardModal] = useState(false);
   const [showCashConfirmModal, setShowCashConfirmModal] = useState(false);
@@ -75,7 +75,7 @@ const TableBill = () => {
       } else {
         showNotification('Payment successful! Thank you.', 'success');
       }
-      fetchBill(); 
+      fetchBill();
     } catch (err) {
       console.error(err);
       showNotification('Failed to process payment.', 'error');
@@ -100,8 +100,8 @@ const TableBill = () => {
 
   return (
     <div className="max-w-md mx-auto page-container animate-fade-in relative pb-10">
-      <button 
-        onClick={() => navigate(`/table/${tableId}`)} 
+      <button
+        onClick={() => navigate(`/table/${tableId}`)}
         className="flex items-center space-x-2 text-gray-500 hover:text-gray-900 dark:hover:text-white transition-colors mb-6 cursor-pointer pointer-events-auto"
       >
         <ArrowLeft size={16} />
@@ -138,14 +138,13 @@ const TableBill = () => {
 
             <div className="space-y-2 mt-4 max-h-64 overflow-y-auto pr-2">
               {billItems.map(item => (
-                <div 
-                  key={item.order_item_id} 
+                <div
+                  key={item.order_item_id}
                   onClick={() => toggleSelection(item.order_item_id)}
-                  className={`flex items-center justify-between p-3 rounded-xl border transition-all cursor-pointer ${
-                    selectedItems.includes(item.order_item_id) 
-                      ? 'border-orange-500 bg-orange-50 dark:bg-orange-900/20 dark:border-orange-500/50 text-orange-900 dark:text-orange-100' 
+                  className={`flex items-center justify-between p-3 rounded-xl border transition-all cursor-pointer ${selectedItems.includes(item.order_item_id)
+                      ? 'border-orange-500 bg-orange-50 dark:bg-orange-900/20 dark:border-orange-500/50 text-orange-900 dark:text-orange-100'
                       : 'border-gray-200 dark:border-gray-700 hover:border-orange-300 dark:hover:border-orange-700/50 bg-white dark:bg-gray-800'
-                  }`}
+                    }`}
                 >
                   <div className="flex items-center space-x-3">
                     {selectedItems.includes(item.order_item_id) ? (
@@ -166,23 +165,23 @@ const TableBill = () => {
             </div>
 
             <div className="pt-4 border-t border-gray-100 dark:border-gray-700">
-              
+
               <div className="mb-5">
                 <p className="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-3 text-center">Payment Method</p>
                 <div className="grid grid-cols-3 gap-2">
-                  <button 
+                  <button
                     onClick={() => setPaymentMethod('card')}
                     className={`py-3 px-1 rounded-xl font-bold flex flex-col items-center justify-center border transition-all ${paymentMethod === 'card' ? 'bg-orange-500 text-white border-orange-500 shadow-md shadow-orange-500/30' : 'bg-gray-50 dark:bg-gray-800 text-gray-600 dark:text-gray-400 border-gray-200 dark:border-gray-700'}`}
                   >
                     <span className="text-xl mb-1">💳</span><span className="text-[10px] uppercase tracking-wider">Credit Card</span>
                   </button>
-                  <button 
+                  <button
                     onClick={() => setPaymentMethod('sodexo')}
                     className={`py-3 px-1 rounded-xl font-bold flex flex-col items-center justify-center border transition-all ${paymentMethod === 'sodexo' ? 'bg-orange-500 text-white border-orange-500 shadow-md shadow-orange-500/30' : 'bg-gray-50 dark:bg-gray-800 text-gray-600 dark:text-gray-400 border-gray-200 dark:border-gray-700'}`}
                   >
                     <span className="text-xl mb-1">🍲</span><span className="text-[10px] uppercase tracking-wider">Meal Card</span>
                   </button>
-                  <button 
+                  <button
                     onClick={() => setPaymentMethod('cash')}
                     className={`py-3 px-1 rounded-xl font-bold flex flex-col items-center justify-center border transition-all ${paymentMethod === 'cash' ? 'bg-orange-500 text-white border-orange-500 shadow-md shadow-orange-500/30' : 'bg-gray-50 dark:bg-gray-800 text-gray-600 dark:text-gray-400 border-gray-200 dark:border-gray-700'}`}
                   >
@@ -195,14 +194,13 @@ const TableBill = () => {
                 <span className="font-bold text-gray-600 dark:text-gray-400">Selected Amount:</span>
                 <span className="text-2xl font-black text-orange-500">${selectedTotal.toFixed(2)}</span>
               </div>
-              <button 
+              <button
                 onClick={handleInitiatePay}
                 disabled={selectedItems.length === 0 || paying}
-                className={`w-full py-4 rounded-full shadow-lg transition-all font-bold text-lg flex justify-center items-center space-x-2 relative overflow-hidden group ${
-                  selectedItems.length === 0 || paying 
-                    ? 'bg-gray-300 dark:bg-gray-700 text-gray-500 cursor-not-allowed opacity-70' 
+                className={`w-full py-4 rounded-full shadow-lg transition-all font-bold text-lg flex justify-center items-center space-x-2 relative overflow-hidden group ${selectedItems.length === 0 || paying
+                    ? 'bg-gray-300 dark:bg-gray-700 text-gray-500 cursor-not-allowed opacity-70'
                     : 'bg-black dark:bg-white text-white dark:text-black hover:shadow-xl hover:-translate-y-0.5 cursor-pointer'
-                }`}
+                  }`}
               >
                 <CreditCard size={20} className="z-10" />
                 <span className="z-10">{paying ? 'Processing...' : 'Pay Selected'}</span>
@@ -220,7 +218,7 @@ const TableBill = () => {
       {showCardModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-fade-in">
           <div className="bg-white dark:bg-gray-800 w-full max-w-sm rounded-3xl p-6 shadow-2xl relative">
-            <button 
+            <button
               onClick={() => setShowCardModal(false)}
               className="absolute right-4 top-4 text-gray-400 hover:text-gray-900 dark:hover:text-white"
             >
@@ -229,7 +227,7 @@ const TableBill = () => {
             <h3 className="text-xl font-bold mb-4 text-gray-900 dark:text-white">
               {paymentMethod === 'sodexo' ? 'Meal Card Details' : 'Credit Card Details'}
             </h3>
-            
+
             <form onSubmit={handleCardSubmit} className="space-y-4">
               <div>
                 <label className="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1">Card Number</label>
@@ -259,7 +257,7 @@ const TableBill = () => {
       {showCashConfirmModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-fade-in">
           <div className="bg-white dark:bg-gray-800 w-full max-w-sm rounded-3xl p-6 shadow-2xl relative text-center">
-            <button 
+            <button
               onClick={() => setShowCashConfirmModal(false)}
               className="absolute right-4 top-4 text-gray-400 hover:text-gray-900 dark:hover:text-white transition-colors"
             >
@@ -273,13 +271,13 @@ const TableBill = () => {
               The selected items (${selectedTotal.toFixed(2)}) will be marked for cash payment. Please pay at the register when leaving. Do you confirm?
             </p>
             <div className="flex gap-3">
-              <button 
+              <button
                 onClick={() => setShowCashConfirmModal(false)}
                 className="flex-1 py-3 px-4 rounded-xl font-bold border border-gray-200 dark:border-gray-700 text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
               >
                 Cancel
               </button>
-              <button 
+              <button
                 onClick={executeCashPayment}
                 className="flex-1 py-3 px-4 rounded-xl font-bold bg-orange-500 text-white shadow-lg shadow-orange-500/30 hover:bg-orange-600 transition-colors"
               >
