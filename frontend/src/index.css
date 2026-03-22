@@ -41,14 +41,7 @@
 .cat-btn {
     background: white;
     border: 2px solid #dc2626;
-<<<<<<< Updated upstream
-=======
-<<<<<<< HEAD
     padding: 8px 16px;
-=======
->>>>>>> Stashed changes
-    padding: 12px 28px;
->>>>>>> fc23f1b2b2de1913e8741bd8e5206652ecf1659b
     border-radius: 50px;
     cursor: pointer;
     font-weight: 600;

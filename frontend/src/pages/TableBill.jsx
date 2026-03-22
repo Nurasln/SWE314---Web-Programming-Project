@@ -25,15 +25,7 @@ const TableBill = () => {
   const fetchBill = async () => {
     try {
       setLoading(true);
-<<<<<<< Updated upstream
-      const res = await axios.get(`http://${window.location.hostname}:8000/tables/${tableId}/bill`);
-=======
-<<<<<<< HEAD
       const res = await axios.get(`/api/tables/${tableId}/bill`);
-=======
-      const res = await axios.get(`http://${window.location.hostname}:8000/tables/${tableId}/bill`);
->>>>>>> fc23f1b2b2de1913e8741bd8e5206652ecf1659b
->>>>>>> Stashed changes
       setBillItems(res.data.items);
       setTotalUnpaid(res.data.total_unpaid);
       setSelectedItems([]);
@@ -74,15 +66,7 @@ const TableBill = () => {
   const executePayment = async (method) => {
     try {
       setPaying(true);
-<<<<<<< Updated upstream
-      await axios.post(`http://${window.location.hostname}:8000/tables/${tableId}/pay`, {
-=======
-<<<<<<< HEAD
       await axios.post(`/api/tables/${tableId}/pay`, {
-=======
-      await axios.post(`http://${window.location.hostname}:8000/tables/${tableId}/pay`, {
->>>>>>> fc23f1b2b2de1913e8741bd8e5206652ecf1659b
->>>>>>> Stashed changes
         order_item_ids: selectedItems,
         method: method
       });
@@ -214,15 +198,7 @@ const TableBill = () => {
               <button 
                 onClick={handleInitiatePay}
                 disabled={selectedItems.length === 0 || paying}
-<<<<<<< Updated upstream
-                className={`w-full py-4 rounded-full shadow-lg transition-all font-bold text-lg flex justify-center items-center space-x-2 relative hidden-overflow group ${
-=======
-<<<<<<< HEAD
                 className={`w-full py-4 rounded-full shadow-lg transition-all font-bold text-lg flex justify-center items-center space-x-2 relative overflow-hidden group ${
-=======
-                className={`w-full py-4 rounded-full shadow-lg transition-all font-bold text-lg flex justify-center items-center space-x-2 relative hidden-overflow group ${
->>>>>>> fc23f1b2b2de1913e8741bd8e5206652ecf1659b
->>>>>>> Stashed changes
                   selectedItems.length === 0 || paying 
                     ? 'bg-gray-300 dark:bg-gray-700 text-gray-500 cursor-not-allowed opacity-70' 
                     : 'bg-black dark:bg-white text-white dark:text-black hover:shadow-xl hover:-translate-y-0.5 cursor-pointer'

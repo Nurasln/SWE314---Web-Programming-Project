@@ -1,15 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import axios from 'axios';
-<<<<<<< Updated upstream
-import { ShoppingCart, PlusCircle, MinusCircle, Loader2, Receipt } from 'lucide-react';
-=======
-<<<<<<< HEAD
 import { ShoppingCart, PlusCircle, MinusCircle, Loader2, Receipt, Trash2 } from 'lucide-react';
-=======
-import { ShoppingCart, PlusCircle, MinusCircle, Loader2, Receipt } from 'lucide-react';
->>>>>>> fc23f1b2b2de1913e8741bd8e5206652ecf1659b
->>>>>>> Stashed changes
 import { useNotification } from '../context/NotificationContext';
 
 const imageUrlMap = {
@@ -69,18 +61,8 @@ const MenuPage = () => {
   const fetchMenuData = async () => {
     try {
       const [menuRes, catRes] = await Promise.all([
-<<<<<<< Updated upstream
-        axios.get(`http://${window.location.hostname}:8000/menu-items`),
-        axios.get(`http://${window.location.hostname}:8000/categories`)
-=======
-<<<<<<< HEAD
         axios.get(`/api/menu-items`),
         axios.get(`/api/categories`)
-=======
-        axios.get(`http://${window.location.hostname}:8000/menu-items`),
-        axios.get(`http://${window.location.hostname}:8000/categories`)
->>>>>>> fc23f1b2b2de1913e8741bd8e5206652ecf1659b
->>>>>>> Stashed changes
       ]);
 
       const catMap = {};
@@ -111,11 +93,6 @@ const MenuPage = () => {
       }
       return [...prevCart, { ...item, qty: 1 }];
     });
-<<<<<<< Updated upstream
-    showNotification(`${item.name} added to cart.`, 'success');
-=======
-<<<<<<< HEAD
-    
     // Trigger the cart button scaling animation
     setCartShake(true);
     setTimeout(() => setCartShake(false), 250);
@@ -124,10 +101,6 @@ const MenuPage = () => {
     if (window.innerWidth >= 640) {
       showNotification(`${item.name} added to cart.`, 'success');
     }
-=======
-    showNotification(`${item.name} added to cart.`, 'success');
->>>>>>> fc23f1b2b2de1913e8741bd8e5206652ecf1659b
->>>>>>> Stashed changes
   };
 
   const removeFromCart = (itemId) => {
@@ -165,42 +138,21 @@ const MenuPage = () => {
     setIsOrdering(true);
 
     try {
-<<<<<<< Updated upstream
-      const orderRes = await axios.post(`http://${window.location.hostname}:8000/orders?table_id=${tableId}`);
-=======
-<<<<<<< HEAD
       const orderRes = await axios.post(`/api/orders?table_id=${tableId}`);
-=======
-      const orderRes = await axios.post(`http://${window.location.hostname}:8000/orders?table_id=${tableId}`);
->>>>>>> fc23f1b2b2de1913e8741bd8e5206652ecf1659b
->>>>>>> Stashed changes
       const orderId = orderRes.data.id;
 
       for (const item of cart) {
         // Sepetteki üründen kaç tane (qty) varsa, her biri için ayrı sipariş satırı (order item) oluşturuyoruz.
         // Böylece 3 patates şipariş edildiğinde masada 3 farklı "1 Adet Patates" görünür ve ayrı ayrı ödenebilir.
         for (let i = 0; i < item.qty; i++) {
-<<<<<<< Updated upstream
-          await axios.post(`http://${window.location.hostname}:8000/orders/${orderId}/items?menu_item_id=${item.id}&quantity=1`);
-=======
-<<<<<<< HEAD
           await axios.post(`/api/orders/${orderId}/items?menu_item_id=${item.id}&quantity=1`);
-=======
-          await axios.post(`http://${window.location.hostname}:8000/orders/${orderId}/items?menu_item_id=${item.id}&quantity=1`);
->>>>>>> fc23f1b2b2de1913e8741bd8e5206652ecf1659b
->>>>>>> Stashed changes
         }
       }
 
       setCart([]);
-<<<<<<< Updated upstream
-=======
-<<<<<<< HEAD
       setShowConfirmModal(false);
-=======
->>>>>>> fc23f1b2b2de1913e8741bd8e5206652ecf1659b
->>>>>>> Stashed changes
       showNotification('Order sent to the kitchen! You can pay when you are ready.', 'success');
+      navigate(`/table/${tableId}/bill`);
     } catch (err) {
       console.error('Error placing order:', err);
       showNotification('Could not place order. Please try again.', 'error');
@@ -235,23 +187,10 @@ const MenuPage = () => {
       <div className="mb-4 pt-4 text-center relative">
         <button
           onClick={() => navigate(`/table/${tableId}/bill`)}
-<<<<<<< Updated upstream
-=======
-<<<<<<< HEAD
           className="fixed z-50 right-4 top-4 sm:right-8 sm:top-6 bg-gray-900 dark:bg-white text-white dark:text-gray-900 p-3 sm:px-5 sm:py-3 rounded-full shadow-[0_10px_30px_rgba(0,0,0,0.3)] hover:scale-105 transition-all flex items-center space-x-2 cursor-pointer ring-4 ring-white/50 dark:ring-black/50"
         >
           <Receipt size={20} />
           <span className="hidden sm:inline text-base">Shared Bill (Pay)</span>
-=======
->>>>>>> Stashed changes
-          className="absolute right-0 sm:right-4 top-4 bg-gray-900 dark:bg-gray-100 text-white dark:text-gray-900 px-4 py-2 rounded-xl text-sm font-bold shadow-lg hover:scale-105 transition-transform flex items-center space-x-2"
-        >
-          <Receipt size={16} />
-          <span className="hidden sm:inline">Shared Bill (Pay)</span>
-<<<<<<< Updated upstream
-=======
->>>>>>> fc23f1b2b2de1913e8741bd8e5206652ecf1659b
->>>>>>> Stashed changes
         </button>
         <div className="inline-block bg-red-100 text-red-600 px-4 py-1.5 rounded-full font-bold text-sm tracking-widest uppercase mb-3">
           Table {tableId}
@@ -288,10 +227,6 @@ const MenuPage = () => {
             <div key={item.id} className="menu-card fade-in relative">
               <img src={imgUrl} alt={item.name} />
               <div className="info flex flex-col text-left">
-<<<<<<< Updated upstream
-                <span className="category-tag">{item.categoryName}</span>
-=======
-<<<<<<< HEAD
                 <div className="flex items-center flex-wrap gap-2 mb-2">
                   <span className="category-tag !mb-0">{item.categoryName}</span>
                   {item.ingredients && item.ingredients.includes("Gluten-Free") && (
@@ -305,10 +240,6 @@ const MenuPage = () => {
                     </span>
                   )}
                 </div>
-=======
-                <span className="category-tag">{item.categoryName}</span>
->>>>>>> fc23f1b2b2de1913e8741bd8e5206652ecf1659b
->>>>>>> Stashed changes
                 <h3 className="mb-1 font-bold text-gray-800 dark:text-gray-100">{item.name}</h3>
                 {item.ingredients && (
                   <p className="text-[11px] text-gray-500 dark:text-gray-400 mb-4 flex-grow leading-snug">
