@@ -92,3 +92,5 @@ python seed.py
 - Azize Altınel – UI/UX Designer & Frontend Developer
 - Yade Başkan – Backend & Database Architect
 - Youssef Ayyash – Full Stack Integration & DevOpsS
+
+This project was developed for the SWE314 - Web Programming course at Istinye University.
