@@ -2,8 +2,6 @@
 
 **Course:** SWE314 - Web Programming  
 **University:** İstinye University  
-**Student:** Asiye Nur Aslan (220911809)  
-**Role:** Business Logic & API Integration Specialist (Student B) & DevOps Lead  
 
 ---
 
