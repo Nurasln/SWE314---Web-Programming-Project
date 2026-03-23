@@ -1,29 +1,127 @@
-# QuickPay: QR Menu & Split Bill
+💳 QuickPay – AI-Powered Smart QR Menu
 
-## Genel Bakış (Project Overview)
-QuickPay, modern restoranlar ve kafeler için geliştirilmiş, QR kod tabanlı bir menü görüntüleme ve sipariş verme sistemidir. Temel amacı, masada oturan misafirlerin garson beklemeden kendi telefonlarından menüyü görüntüleyebilmesi, sipariş verebilmesi ve sonunda da hesabı kendi aralarında kolayca bölebilmesidir. 
+QuickPay is a high-performance, full-stack web application designed to modernize the dining experience. It features autonomous QR-based table identification, a real-time digital menu, and an integrated AI Waiter for personalized recommendations and allergen checks.
 
-Sistem iki ana parçadan oluşur:
-1. **Backend**: FastAPI tabanlı hızlı ve modern bir API. SQLModel ile veritabanı yönetimi ve Groq AI entegrasyonu ile yapay zeka destekli garson önerileri sunar.
-2. **Frontend**: React (Vite) ile geliştirilmiş, TailwindCSS destekli, şık ve mobil uyumlu bir kullanıcı arayüzü. Pürüzsüz animasyonlar ve state yönetimi sağlar.
+📸 Screenshots
 
-## Kurulum ve Çalıştırma
+Here are some key views of the application in action:
 
-### Backend
-1. `backend/` dizinine gidin.
-2. Sanal çevre (virtual environment) oluşturup aktif edin: `python -m venv .venv` ve `.\.venv\Scripts\activate` (veya varsa mevcuttan devam edin)
-3. Bağımlılıkları yükleyin: `pip install -r requirements.txt`
-4. `.env` dosyasına Groq API anahtarınızı ekleyin.
-5. Veritabanını doldurmak için: `python seed.py`
-6. Sunucuyu başlatın: `uvicorn main:app --reload`
+Digital Menu & QR Entry
 
-### Frontend
-1. `frontend/` dizinine gidin.
-2. Paketleri yükleyin: `npm install`
-3. Geliştirme sunucusunu başlatın: `npm run dev`
+AI Waiter Support
 
-## Teknik Derinlik (Technical Details)
-- **API Katmanı**: FastAPI ile hızlı ve Python'un asenkron yapısıyla yüksek performanslı uç noktalar kurulmuştur. CORS ayarları ve Pydantic validasyonları tam yapılandırılmıştır.
-- **Veri Modeli**: `SQLModel` kullanılarak `Pydantic` ve `SQLAlchemy`'nin gücü birleştirilmiş, Foreign Key ve Object Relationships (Table, MenuItem, Category, Order, OrderItem) sağlam bir yapıyla uygulanmıştır.
-- **Yapay Zeka**: Chatbot entegrasyonu, güçlü LLM modeli kullanan `Groq API` ile hızlı yanınt ("waiter/garson") performansı hedeflenerek tasarlanmıştır.
-- **Frontend Mimari**: Component bazlı logic, Sticky tab bar'lar, animasyonlu kart UI dizaynlarla üst segment ("premium") bir deneyim yaratıldı.
+
+
+
+
+Mobile-responsive menu access via table ID
+
+Intelligent dish recommendations
+
+Split Bill & Checkout
+
+Admin Table Management
+
+
+
+
+
+Dynamic cost calculation & splitting
+
+Real-time table status tracking
+
+🚀 Key Features
+
+📱 QR-Based Access: Dynamic routing via /table/:id using React Router.
+
+🤖 AI-Powered Waiter: Integrated Groq (Llama-3) service for dish suggestions and allergen filtering.
+
+🧾 Smart Billing: Real-time balance tracking with "Split Bill" functionality for group dining.
+
+🛡️ Robust Backend: Data integrity ensured by SQLModel and strict Pydantic validation.
+
+📱 Mobile-First UI: Fully responsive design built with Tailwind CSS.
+
+⚙️ Technical Stack
+
+Frontend
+
+React (Vite): Modern component-based architecture.
+
+Tailwind CSS: For fluid, responsive styling.
+
+Axios: For asynchronous API communication.
+
+Backend
+
+FastAPI: High-concurrency Python framework.
+
+SQLModel: Unified SQL management and Pydantic validation.
+
+SQLite: Lightweight relational database.
+
+Groq Cloud API: LLM integration for the AI service.
+
+🏗️ Project Structure
+
+SWE314---Web-Programming-Project/
+│
+├── backend/            # FastAPI backend
+│   ├── services/       # AI & Business logic
+│   ├── main.py         # API Endpoints
+│   ├── models.py       # SQLModel Schemas
+│   └── requirements.txt
+│
+├── frontend/           # React + Vite frontend
+│   ├── src/
+│   │   ├── components/ # UI Components
+│   │   └── App.jsx     # Main Routing
+│   └── package.json
+│
+├── screenshots/        # Application images for documentation
+├── quickpay.db         # SQLite database file
+└── README.md
+
+
+🔧 Installation & Setup
+
+1. Backend Setup
+
+cd backend
+python -m venv venv
+# Activate venv:
+# Linux/Mac: source venv/bin/activate | Windows: venv\Scripts\activate
+
+pip install -r requirements.txt
+uvicorn main:app --reload
+
+
+Backend runs on: http://127.0.0.1:8000
+
+2. Frontend Setup
+
+cd frontend
+npm install
+npm run dev
+
+
+Frontend runs on: http://localhost:5173
+
+3. Database Seeding
+
+To populate the menu and tables:
+
+python seed.py
+
+
+🛡️ Security & Environment Variables
+
+For security, API keys are managed via a .env file. Refer to .env.example to set up your credentials for the Groq AI service.
+
+👥 Contributors
+
+Asiye Nur Aslan - Business Logic & DevOps Lead
+
+[Diğer takım arkadaşlarınızın isimleri]
+
+This project was developed for the SWE314 - Web Programming course at [University Name].
