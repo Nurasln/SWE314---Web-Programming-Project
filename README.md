@@ -4,7 +4,7 @@ QuickPay is a high-performance, full-stack web application designed to modernize
 
 ## **📸 Screenshots**
 
-Here are bkey views of the application in action:
+Here are key views of the application in action:
 
 | Digital Menu & QR Entry | AI Waiter Support |
 | :---- | :---- |
@@ -15,6 +15,11 @@ Here are bkey views of the application in action:
 | :---- | :---- |
 |  |  |
 | *Dynamic cost calculation & splitting* | *Real-time table status tracking* |
+
+| Mobile View 1 | Mobile View 2 |
+| :---- | :---- |
+|  |  |
+| *Responsive Design* | *Payment Integration* |
 
 ## **🚀 Key Features**
 
@@ -93,7 +98,11 @@ For security, API keys are managed via a .env file. Refer to .env.example to set
 
 ## **👥 Contributors**
 
-* **Asiye Nur Aslan** \- Business Logic & DevOps Lead  
-* \[Diğer Takım Arkadaşlarının İsimleri\]
+* **Asiye Nur Aslan \- Business Logic & DevOps Lead**   
+* **Melis Kahraman \- Frontend Lead**   
+* **Azize Altınel \- UI/UX Designer & Frontend Developer**   
+* **Yade Başkan \- Backend & Database Architect**   
+* **Youssef Ayyash \-  Full Stack Integration & DevOps** 
 
-*This project was developed for the **SWE314 \- Web Programming** course at \[University Name\].*
+**This project was developed for the SWE314 \- Web Programming course at İsinye University.**
+
