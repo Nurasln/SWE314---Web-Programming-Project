@@ -11,15 +11,14 @@ from models import Table, MenuItem, Order, OrderItem, OrderStatus, Category, Sta
 from database import create_db_and_tables, get_session
 from schemas import AISuggestionRequest, AISuggestionResponse, CategoryCreate, StaffCreate, DashboardStats
 from services.ai_service import AIWaiterService
+from auth import create_access_token, get_current_admin
 
 app = FastAPI(title="QuickPay: QR Menu & Split Bill")
 
-# Rate Limiting - prevents API abuse
 limiter = Limiter(key_func=get_remote_address)
 app.state.limiter = limiter
 app.add_middleware(SlowAPIMiddleware)
 
-# CORS Settings
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
@@ -32,22 +31,19 @@ app.add_middleware(
 def on_startup():
     create_db_and_tables()
 
-# -----------------
-# Table Endpoints
-# -----------------
 @app.get("/tables", response_model=List[Table])
 def list_tables(session: Session = Depends(get_session)):
     return session.exec(select(Table)).all()
 
 @app.post("/tables", response_model=Table)
-def create_table(table: Table, session: Session = Depends(get_session)):
+def create_table(table: Table, session: Session = Depends(get_session), current_admin: dict = Depends(get_current_admin)):
     session.add(table)
     session.commit()
     session.refresh(table)
     return table
 
 @app.put("/tables/{table_id}/clear", response_model=Table)
-def clear_table(table_id: int, session: Session = Depends(get_session)):
+def clear_table(table_id: int, session: Session = Depends(get_session), current_admin: dict = Depends(get_current_admin)):
     table = session.get(Table, table_id)
     if not table:
         raise HTTPException(status_code=404, detail="Table not found")
@@ -57,15 +53,12 @@ def clear_table(table_id: int, session: Session = Depends(get_session)):
     session.refresh(table)
     return table
 
-# -----------------
-# Category Endpoints
-# -----------------
 @app.get("/categories", response_model=List[Category])
 def list_categories(session: Session = Depends(get_session)):
     return session.exec(select(Category)).all()
 
 @app.post("/categories", response_model=Category)
-def create_category(category_in: CategoryCreate, session: Session = Depends(get_session)):
+def create_category(category_in: CategoryCreate, session: Session = Depends(get_session), current_admin: dict = Depends(get_current_admin)):
     category_data = category_in.dict() if hasattr(category_in, "dict") else category_in.model_dump()
     category = Category(**category_data)
     session.add(category)
@@ -73,11 +66,8 @@ def create_category(category_in: CategoryCreate, session: Session = Depends(get_
     session.refresh(category)
     return category
 
-# -----------------
-# Menu Endpoints
-# -----------------
 @app.post("/menu-items", response_model=MenuItem)
-def create_menu_item(menu_item: MenuItem, session: Session = Depends(get_session)):
+def create_menu_item(menu_item: MenuItem, session: Session = Depends(get_session), current_admin: dict = Depends(get_current_admin)):
     session.add(menu_item)
     session.commit()
     session.refresh(menu_item)
@@ -90,9 +80,6 @@ def list_menu_items(category_id: Optional[int] = None, session: Session = Depend
         query = query.where(MenuItem.category_id == category_id)
     return session.exec(query).all()
 
-# -----------------
-# Order Endpoints
-# -----------------
 @app.post("/orders", response_model=Order)
 def create_order(table_id: int, session: Session = Depends(get_session)):
     table = session.get(Table, table_id)
@@ -125,9 +112,6 @@ def add_order_item(order_id: int, menu_item_id: int, quantity: int = 1, session:
     session.refresh(order_item)
     return order_item
 
-# -----------------
-# Split Bill Logic
-# -----------------
 @app.get("/orders/{order_id}/split-bill")
 def split_bill(order_id: int, num_people: int = Query(..., gt=0), session: Session = Depends(get_session)):
     order = session.get(Order, order_id)
@@ -151,15 +135,26 @@ def split_bill(order_id: int, num_people: int = Query(..., gt=0), session: Sessi
         "currency": "USD"
     }
 
-# -----------------
-# Admin & Staff Endpoints
-# -----------------
+@app.put("/orders/{order_id}/pay")
+def pay_order(order_id: int, session: Session = Depends(get_session)):
+    order = session.get(Order, order_id)
+
+    if not order:
+        raise HTTPException(status_code=404, detail="Order not found")
+
+    order.status = OrderStatus.paid
+    session.add(order)
+    session.commit()
+    session.refresh(order)
+
+    return {"message": "Order marked as paid", "order_id": order_id, "status": order.status}
+
 @app.get("/staff", response_model=List[Staff])
-def list_staff(session: Session = Depends(get_session)):
+def list_staff(session: Session = Depends(get_session), current_admin: dict = Depends(get_current_admin)):
     return session.exec(select(Staff)).all()
 
 @app.post("/staff", response_model=Staff)
-def create_staff(staff_in: StaffCreate, session: Session = Depends(get_session)):
+def create_staff(staff_in: StaffCreate, session: Session = Depends(get_session), current_admin: dict = Depends(get_current_admin)):
     staff_data = staff_in.dict() if hasattr(staff_in, "dict") else staff_in.model_dump()
     staff = Staff(**staff_data)
     session.add(staff)
@@ -168,7 +163,7 @@ def create_staff(staff_in: StaffCreate, session: Session = Depends(get_session))
     return staff
 
 @app.delete("/staff/{staff_id}")
-def delete_staff(staff_id: int, session: Session = Depends(get_session)):
+def delete_staff(staff_id: int, session: Session = Depends(get_session), current_admin: dict = Depends(get_current_admin)):
     staff = session.get(Staff, staff_id)
     if not staff:
         raise HTTPException(status_code=404, detail="Staff not found")
@@ -179,14 +174,30 @@ def delete_staff(staff_id: int, session: Session = Depends(get_session)):
 @app.post("/admin/login")
 def admin_login(pin: str = Query(...), session: Session = Depends(get_session)):
     staff = session.exec(select(Staff).where(Staff.pin == pin)).first()
+
     if not staff:
         if pin == "1234":
-            return {"status": "success", "role": "admin", "name": "Admin (Fallback)"}
+            token = create_access_token({"sub": "admin", "role": "admin"})
+            return {
+                "status": "success",
+                "access_token": token,
+                "token_type": "bearer",
+                "role": "admin",
+                "name": "Admin (Fallback)"
+            }
         raise HTTPException(status_code=401, detail="Invalid PIN")
-    return {"status": "success", "role": staff.role.value, "name": staff.name}
+
+    token = create_access_token({"sub": staff.name, "role": staff.role.value})
+    return {
+        "status": "success",
+        "access_token": token,
+        "token_type": "bearer",
+        "role": staff.role.value,
+        "name": staff.name
+    }
 
 @app.get("/admin/dashboard-stats", response_model=DashboardStats)
-def dashboard_stats(session: Session = Depends(get_session)):
+def dashboard_stats(session: Session = Depends(get_session), current_admin: dict = Depends(get_current_admin)):
     orders = session.exec(select(Order)).all()
     total_revenue = 0.0
 
@@ -205,18 +216,32 @@ def dashboard_stats(session: Session = Depends(get_session)):
         total_orders=total_orders
     )
 
-# -----------------
-# AI Waiter Endpoint
-# -----------------
+@app.get("/admin/revenue-trend")
+def revenue_trend(session: Session = Depends(get_session), current_admin: dict = Depends(get_current_admin)):
+    orders = session.exec(select(Order)).all()
+    trend = []
+
+    for order in orders:
+        if order.status == OrderStatus.paid:
+            revenue = 0.0
+
+            for item in order.order_items:
+                menu_item = session.get(MenuItem, item.menu_item_id)
+                if menu_item:
+                    revenue += float(menu_item.price) * int(item.quantity)
+
+            trend.append({
+                "label": f"Order #{order.id}",
+                "revenue": round(revenue, 2)
+            })
+
+    return trend
+
 ai_service = AIWaiterService()
 
 @app.post("/ai/suggest", response_model=AISuggestionResponse)
 @limiter.limit("5/minute")
-def ai_suggest(
-    fastapi_request: Request,
-    request: AISuggestionRequest,
-    session: Session = Depends(get_session)
-):
+def ai_suggest(fastapi_request: Request, request: AISuggestionRequest, session: Session = Depends(get_session)):
     menu_items = session.exec(select(MenuItem)).all()
 
     if not menu_items:
