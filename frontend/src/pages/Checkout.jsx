@@ -2,7 +2,6 @@ import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import { CreditCard, Users, Receipt, ArrowLeft } from 'lucide-react';
-import { useNotification } from '../context/NotificationContext';
 
 const Checkout = () => {
   const { orderId } = useParams();
@@ -10,7 +9,6 @@ const Checkout = () => {
   const [billData, setBillData] = useState(null);
   const [numPeople, setNumPeople] = useState(1);
   const [loading, setLoading] = useState(true);
-  const { showNotification } = useNotification();
 
   useEffect(() => {
     fetchBillInfo(numPeople);
@@ -19,11 +17,11 @@ const Checkout = () => {
   const fetchBillInfo = async (people) => {
     try {
       setLoading(true);
-      const response = await axios.get(`/api/orders/${orderId}/split-bill?num_people=${people}`);
+      const response = await axios.get(`https://swe314-web-programming-project-production.up.railway.app/orders/${orderId}/split-bill?num_people=${people}`);
       setBillData(response.data);
     } catch (err) {
       console.error(err);
-      showNotification('Could not fetch bill total. Please check if items were added.', 'error');
+      alert('Could not fetch bill total. Please check if items were added.');
     } finally {
       setLoading(false);
     }
@@ -31,20 +29,6 @@ const Checkout = () => {
 
   const handleSplitChange = (n) => {
     setNumPeople(n);
-  };
-
-  const handlePayment = () => {
-    if (!billData) return;
-
-    if (numPeople > 1) {
-      const paid = billData.amount_per_person.toFixed(2);
-      const remaining = (billData.total_amount - billData.amount_per_person).toFixed(2);
-      showNotification(`$${paid} paid. Please select a payment method for the remaining $${remaining}.`, 'warning');
-    } else {
-      showNotification('Payment completed successfully.', 'success');
-      // Optionally redirect or clear order
-      setTimeout(() => navigate('/'), 2000);
-    }
   };
 
   if (!billData && loading) {
@@ -136,10 +120,7 @@ const Checkout = () => {
             </div>
           )}
 
-          <button 
-            onClick={handlePayment}
-            className="w-full mt-4 bg-black dark:bg-white text-white dark:text-black py-4 rounded-full shadow-lg hover:shadow-xl hover:-translate-y-0.5 transition-all font-bold text-lg flex justify-center items-center space-x-2 relative overflow-hidden group"
-          >
+          <button className="w-full mt-4 bg-black dark:bg-white text-white dark:text-black py-4 rounded-full shadow-lg hover:shadow-xl hover:-translate-y-0.5 transition-all font-bold text-lg flex justify-center items-center space-x-2 relative overflow-hidden group">
             <CreditCard size={20} className="z-10" />
             <span className="z-10">Pay Now</span>
             <div className="absolute inset-0 bg-gray-800 dark:bg-gray-200 w-full transform -translate-x-full group-hover:translate-x-0 transition-transform duration-300 ease-out z-0"></div>

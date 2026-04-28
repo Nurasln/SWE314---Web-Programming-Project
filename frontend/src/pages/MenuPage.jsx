@@ -1,23 +1,22 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import axios from 'axios';
-import { ShoppingCart, PlusCircle, MinusCircle, Loader2, Receipt, Trash2 } from 'lucide-react';
-import { useNotification } from '../context/NotificationContext';
+import { ShoppingCart, PlusCircle, MinusCircle, Loader2 } from 'lucide-react';
 
 const imageUrlMap = {
   "Margherita Pizza": "https://cdn.pixabay.com/photo/2017/12/10/14/47/pizaa-3010062_640.jpg",
   "Pepperoni Pizza": "https://images.unsplash.com/photo-1628840042765-356cda07504e?q=80&w=500",
-  "BBQ Chicken Pizza": "https://media.istockphoto.com/id/1437998613/tr/foto%C4%9Fraf/round-ready-made-fresh-pizza-with-dark-sauce-chicken-with-barbecue-sauce-lies-in-the-box.jpg?s=2048x2048&w=is&k=20&c=wwftsgFxSMQedzhDU2L4Ser7nS8uCwcSS2kH3jGU3LE=",
+  "BBQ Chicken Pizza": "https://images.unsplash.com/photo-1513104890138-7c749659a591?q=80&w=500",
   "Classic Cheeseburger": "https://images.unsplash.com/photo-1568901346375-23c9450c58cd?q=80&w=500",
   "Mushroom Swiss Burger": "https://images.unsplash.com/photo-1550547660-d9450f859349?q=80&w=500",
   "Spaghetti Carbonara": "https://images.unsplash.com/photo-1612874742237-6526221588e3?q=80&w=500",
-  "Penne Arrabbiata": "https://media.gettyimages.com/id/1170464385/photo/penne-with-tomato-sauce-and-pork.jpg?s=612x612&w=gi&k=20&c=vSFgKLodGCCBtoghOdR6gHqpzKHFkBO0jIdmqdr1Lb4=",
+  "Penne Arrabbiata": "https://images.unsplash.com/photo-1595295333158-4742f28fbd85?q=80&w=500",
   "Grilled Chicken Breast": "https://images.unsplash.com/photo-1532550907401-a500c9a57435?q=80&w=500",
   "Ribeye Steak": "https://images.unsplash.com/photo-1600891964092-4316c288032e?q=80&w=500",
   "Grilled Salmon": "https://images.unsplash.com/photo-1467003909585-2f8a72700288?q=80&w=500",
   "Caesar Salad": "https://images.unsplash.com/photo-1550304943-4f24f54ddde9?q=80&w=500",
   "Tomato Soup": "https://images.unsplash.com/photo-1547592166-23ac45744acd?q=80&w=500",
-  "Bruschetta": "https://media.gettyimages.com/id/1256444154/photo/bruschetta-bruschetta-with-cherry-tomatoes-crostini-bruschetta.jpg?s=1024x1024&w=gi&k=20&c=WUixx4Z5KH8mrNWKePMveT_PmmIrY5-RIlp6AnpYuZk=",
+  "Bruschetta": "https://images.unsplash.com/photo-1572656631137-7935297eff55?q=80&w=500",
   "Mozzarella Sticks": "https://media.istockphoto.com/id/1405214770/tr/foto%C4%9Fraf/deep-fried-mozzarella-cheese-sticks-with-tomato-ketchup-and-mayo-dip-served-in-a-dish.jpg?s=2048x2048&w=is&k=20&c=Dn5mYyTYbZiTpxkL14GlNGifnM7NemCyd9bHhmZ8PSw=",
   "Hummus Plate": "https://media.istockphoto.com/id/1220638760/tr/foto%C4%9Fraf/ev-yap%C4%B1m%C4%B1-humus.jpg?s=2048x2048&w=is&k=20&c=8wCFvU1xWlHJHbTDRfzUmfT07NCpDRcRmC-gKihQ2lE=",
   "French Fries": "https://images.unsplash.com/photo-1630384060421-cb20d0e0649d?q=80&w=500",
@@ -30,10 +29,10 @@ const imageUrlMap = {
   "Lemonade": "https://images.unsplash.com/photo-1513558161293-cdaf765ed2fd?q=80&w=500",
   "Iced Coffee": "https://images.unsplash.com/photo-1517701604599-bb29b565090c?q=80&w=500",
   "Orange Juice": "https://images.unsplash.com/photo-1613478223719-2ab802602423?q=80&w=500",
-  "Water": "https://media.gettyimages.com/id/185267353/photo/backlit-plastic-water-bottle-isolated-on-white.jpg?s=2048x2048&w=gi&k=20&c=Yf7WnZYNT7DqRDqeD-q1tBqq9MARFvXuzOI3fbkTnoE=",
+  "Water": "https://media.istockphoto.com/id/1353351865/tr/foto%C4%9Fraf/shochu-and-snacks-placed-on-a-black-wood-grain-background.jpg?s=2048x2048&w=is&k=20&c=L-uopDX-v2uoO-xc1f8n3Ksw48tbkssDO5hBcmQyibs=",
   "Chocolate Brownie": "https://images.unsplash.com/photo-1606313564200-e75d5e30476c?q=80&w=500",
   "Tiramisu": "https://images.unsplash.com/photo-1571877227200-a0d98ea607e9?q=80&w=500",
-  "Blueberry Cheesecake": "https://images.unsplash.com/photo-1533134242443-d4fd215305ad?q=80&w=500",
+  "Cheesecake": "https://images.unsplash.com/photo-1533134242443-d4fd215305ad?q=80&w=500",
   "Apple Pie": "https://images.unsplash.com/photo-1568571780765-9276ac8b75a2?q=80&w=500",
 };
 
@@ -46,13 +45,10 @@ const MenuPage = () => {
   const [categories, setCategories] = useState([]);
   const [selectedCategory, setSelectedCategory] = useState("all");
   const [loading, setLoading] = useState(true);
-  const { showNotification } = useNotification();
-
+  
   // Local cart state for multi-user support
   const [cart, setCart] = useState([]);
   const [isOrdering, setIsOrdering] = useState(false);
-  const [showConfirmModal, setShowConfirmModal] = useState(false);
-  const [cartShake, setCartShake] = useState(false);
 
   useEffect(() => {
     fetchMenuData();
@@ -61,23 +57,23 @@ const MenuPage = () => {
   const fetchMenuData = async () => {
     try {
       const [menuRes, catRes] = await Promise.all([
-        axios.get(`/api/menu-items`),
-        axios.get(`/api/categories`)
+        axios.get('https://swe314-web-programming-project-production.up.railway.app/menu-items'),
+        axios.get('https://swe314-web-programming-project-production.up.railway.app/categories')
       ]);
-
+      
       const catMap = {};
       catRes.data.forEach(c => catMap[c.id] = c.name);
-
+      
       const itemsWithCategory = menuRes.data.map(item => ({
         ...item,
         categoryName: catMap[item.category_id] || "Other"
       }));
-
+      
       setMenuItems(itemsWithCategory);
       setCategories(catRes.data);
     } catch (err) {
       console.error(err);
-      showNotification('Failed to load menu data.', 'error');
+      alert('Failed to load menu data.');
     } finally {
       setLoading(false);
     }
@@ -87,41 +83,23 @@ const MenuPage = () => {
     setCart((prevCart) => {
       const existingItem = prevCart.find((i) => i.id === item.id);
       if (existingItem) {
-        return prevCart.map((i) =>
+        return prevCart.map((i) => 
           i.id === item.id ? { ...i, qty: i.qty + 1 } : i
         );
       }
       return [...prevCart, { ...item, qty: 1 }];
     });
-    // Trigger the cart button scaling animation
-    setCartShake(true);
-    setTimeout(() => setCartShake(false), 250);
-
-    // Only display toast notifications on desktop
-    if (window.innerWidth >= 640) {
-      showNotification(`${item.name} added to cart.`, 'success');
-    }
   };
 
   const removeFromCart = (itemId) => {
     setCart((prevCart) => {
       const existingItem = prevCart.find((i) => i.id === itemId);
       if (existingItem && existingItem.qty > 1) {
-        return prevCart.map((i) =>
+        return prevCart.map((i) => 
           i.id === itemId ? { ...i, qty: i.qty - 1 } : i
         );
       }
-      const newCart = prevCart.filter((i) => i.id !== itemId);
-      if (newCart.length === 0) setShowConfirmModal(false);
-      return newCart;
-    });
-  };
-
-  const deleteFromCart = (itemId) => {
-    setCart((prevCart) => {
-      const newCart = prevCart.filter((i) => i.id !== itemId);
-      if (newCart.length === 0) setShowConfirmModal(false);
-      return newCart;
+      return prevCart.filter((i) => i.id !== itemId);
     });
   };
 
@@ -133,29 +111,23 @@ const MenuPage = () => {
   const getTotalCartItems = () => cart.reduce((total, item) => total + item.qty, 0);
   const getTotalCartPrice = () => cart.reduce((total, item) => total + (item.price * item.qty), 0);
 
-  const handleConfirmOrder = async () => {
+  const handlePlaceOrder = async () => {
     if (cart.length === 0) return;
     setIsOrdering(true);
-
+    
     try {
-      const orderRes = await axios.post(`/api/orders?table_id=${tableId}`);
+      const orderRes = await axios.post(`https://swe314-web-programming-project-production.up.railway.app/orders?table_id=${tableId}`);
       const orderId = orderRes.data.id;
 
       for (const item of cart) {
-        // Sepetteki üründen kaç tane (qty) varsa, her biri için ayrı sipariş satırı (order item) oluşturuyoruz.
-        // Böylece 3 patates şipariş edildiğinde masada 3 farklı "1 Adet Patates" görünür ve ayrı ayrı ödenebilir.
-        for (let i = 0; i < item.qty; i++) {
-          await axios.post(`/api/orders/${orderId}/items?menu_item_id=${item.id}&quantity=1`);
-        }
+        await axios.post(`https://swe314-web-programming-project-production.up.railway.app/orders/${orderId}/items?menu_item_id=${item.id}&quantity=${item.qty}`);
       }
 
       setCart([]);
-      setShowConfirmModal(false);
-      showNotification('Order sent to the kitchen! You can pay when you are ready.', 'success');
-      navigate(`/table/${tableId}/bill`);
+      navigate(`/checkout/${orderId}`);
     } catch (err) {
       console.error('Error placing order:', err);
-      showNotification('Could not place order. Please try again.', 'error');
+      alert('Could not place order. Please check the console for details.');
     } finally {
       setIsOrdering(false);
     }
@@ -169,29 +141,15 @@ const MenuPage = () => {
     );
   }
 
-  const filteredItems = selectedCategory === "all"
-    ? menuItems
+  const filteredItems = selectedCategory === "all" 
+    ? menuItems 
     : menuItems.filter(item => item.categoryName === selectedCategory);
 
   const totalItems = getTotalCartItems();
 
-  const handleCategorySelect = (category) => {
-    setSelectedCategory(category);
-    setTimeout(() => {
-      window.scrollTo({ top: 0, behavior: 'smooth' });
-    }, 100); // Wait for React to render the new list so the browser doesn't block the scroll
-  };
-
   return (
     <div className="page-container pb-32">
-      <div className="mb-4 pt-4 text-center relative">
-        <button
-          onClick={() => navigate(`/table/${tableId}/bill`)}
-          className="fixed z-50 right-4 top-4 sm:right-8 sm:top-6 bg-gray-900 dark:bg-white text-white dark:text-gray-900 p-3 sm:px-5 sm:py-3 rounded-full shadow-[0_10px_30px_rgba(0,0,0,0.3)] hover:scale-105 transition-all flex items-center space-x-2 cursor-pointer ring-4 ring-white/50 dark:ring-black/50"
-        >
-          <Receipt size={20} />
-          <span className="hidden sm:inline text-base">Shared Bill (Pay)</span>
-        </button>
+      <div className="mb-4 pt-4 text-center">
         <div className="inline-block bg-red-100 text-red-600 px-4 py-1.5 rounded-full font-bold text-sm tracking-widest uppercase mb-3">
           Table {tableId}
         </div>
@@ -201,17 +159,17 @@ const MenuPage = () => {
       </div>
 
       <div className="category-slider">
-        <button
+        <button 
           className={`cat-btn ${selectedCategory === 'all' ? 'active' : ''}`}
-          onClick={() => handleCategorySelect('all')}
+          onClick={() => setSelectedCategory('all')}
         >
           All
         </button>
         {categories.map((cat) => (
-          <button
+          <button 
             key={cat.id}
             className={`cat-btn ${selectedCategory === cat.name ? 'active' : ''}`}
-            onClick={() => handleCategorySelect(cat.name)}
+            onClick={() => setSelectedCategory(cat.name)}
           >
             {cat.name}
           </button>
@@ -222,44 +180,25 @@ const MenuPage = () => {
         {filteredItems.map(item => {
           const qty = getCartQuantity(item.id);
           const imgUrl = imageUrlMap[item.name] || DEFAULT_IMAGE;
-
+          
           return (
             <div key={item.id} className="menu-card fade-in relative">
               <img src={imgUrl} alt={item.name} />
-              <div className="info flex flex-col text-left">
-                <div className="flex items-center flex-wrap gap-2 mb-2">
-                  <span className="category-tag !mb-0">{item.categoryName}</span>
-                  {item.ingredients && item.ingredients.includes("Gluten-Free") && (
-                    <span className="bg-amber-50 dark:bg-amber-900/40 border border-amber-200 dark:border-amber-700 text-amber-700 dark:text-amber-300 text-[10px] font-bold px-2 py-0.5 rounded-full flex items-center gap-1 shadow-sm" title="Gluten-Free">
-                      🌾 <span className="tracking-wide">GF</span>
-                    </span>
-                  )}
-                  {item.ingredients && (item.ingredients.includes("Vegan") || item.ingredients.toLowerCase().includes("lactose-free") || item.ingredients.toLowerCase().includes("dairy-free")) && (
-                    <span className="bg-sky-50 dark:bg-sky-900/40 border border-sky-200 dark:border-sky-700 text-sky-700 dark:text-sky-300 text-[10px] font-bold px-2 py-0.5 rounded-full flex items-center gap-1 shadow-sm" title="Lactose-Free">
-                      🥛 <span className="tracking-wide">LF</span>
-                    </span>
-                  )}
-                </div>
-                <h3 className="mb-1 font-bold text-gray-800 dark:text-gray-100">{item.name}</h3>
-                {item.ingredients && (
-                  <p className="text-[11px] text-gray-500 dark:text-gray-400 mb-4 flex-grow leading-snug">
-                    {item.ingredients}
-                  </p>
-                )}
-                <div className="mt-auto">
-                  <p className="price">${item.price.toFixed(2)}</p>
-                </div>
-
+              <div className="info flex flex-col">
+                <span className="category-tag">{item.categoryName}</span>
+                <h3 className="flex-grow">{item.name}</h3>
+                <p className="price">${item.price.toFixed(2)}</p>
+                
                 {qty > 0 ? (
                   <div className="mt-4 flex items-center justify-between border border-gray-200 dark:border-gray-600 rounded-xl p-1 bg-gray-50 dark:bg-gray-700/30">
-                    <button
+                    <button 
                       onClick={(e) => { e.stopPropagation(); removeFromCart(item.id); }}
                       className="p-2 text-red-500 hover:text-red-700 hover:bg-red-50 dark:hover:bg-red-900/30 rounded-lg transition-colors cursor-pointer"
                     >
                       <MinusCircle size={20} />
                     </button>
                     <span className="font-bold w-8 text-center text-gray-900 dark:text-white">{qty}</span>
-                    <button
+                    <button 
                       onClick={(e) => { e.stopPropagation(); addToCart(item); }}
                       className="p-2 text-green-600 hover:text-green-700 hover:bg-green-50 dark:hover:bg-green-900/30 rounded-lg transition-colors cursor-pointer"
                     >
@@ -282,9 +221,9 @@ const MenuPage = () => {
       </div>
 
       {totalItems > 0 && (
-        <div className={`fixed bottom-[6.5rem] right-6 sm:bottom-6 sm:right-auto sm:left-1/2 sm:-translate-x-1/2 z-40 transition-transform duration-200 ease-out origin-center ${cartShake ? 'scale-110' : 'scale-100'}`}>
+        <div className="fixed bottom-[6.5rem] right-6 sm:bottom-6 sm:right-auto sm:left-1/2 sm:-translate-x-1/2 z-40 animate-bounce-short">
           <button
-            onClick={() => setShowConfirmModal(true)}
+            onClick={handlePlaceOrder}
             disabled={isOrdering}
             className="bg-black dark:bg-white text-white dark:text-black py-3.5 px-6 rounded-full shadow-2xl flex items-center space-x-4 hover:scale-105 transition-transform disabled:opacity-80 disabled:hover:scale-100 cursor-pointer"
           >
@@ -300,55 +239,6 @@ const MenuPage = () => {
               {totalItems} <span className="text-xs ml-1 opacity-80 font-normal">(${(getTotalCartPrice()).toFixed(2)})</span>
             </div>
           </button>
-        </div>
-      )}
-
-      {/* Confirmation Modal */}
-      {showConfirmModal && (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4 animate-fade-in">
-          <div className="bg-white dark:bg-gray-800 rounded-3xl p-6 max-w-sm w-full shadow-2xl z-[101]">
-            <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-4 text-center">Confirm Your Order</h3>
-            <div className="max-h-60 overflow-y-auto mb-4 border-b border-gray-100 dark:border-gray-700 pb-4 space-y-3">
-              {cart.map((item, idx) => (
-                <div key={idx} className="flex justify-between items-center bg-gray-50 dark:bg-gray-700/30 p-2.5 rounded-xl border border-gray-100 dark:border-gray-600">
-                  <div className="flex flex-col">
-                    <span className="font-semibold text-gray-800 dark:text-gray-200 text-sm">{item.qty}x {item.name}</span>
-                    <span className="text-xs text-gray-500">${item.price.toFixed(2)} each</span>
-                  </div>
-                  <div className="flex items-center space-x-3">
-                    <span className="font-bold text-gray-900 dark:text-white">${(item.price * item.qty).toFixed(2)}</span>
-                    <button 
-                      onClick={() => deleteFromCart(item.id)}
-                      className="p-1.5 text-red-500 hover:text-red-700 hover:bg-red-100 dark:hover:bg-red-900/40 rounded-lg transition-colors cursor-pointer"
-                      title="Remove Item"
-                    >
-                      <Trash2 size={16} />
-                    </button>
-                  </div>
-                </div>
-              ))}
-            </div>
-            <div className="flex justify-between items-center mb-6 px-1">
-              <span className="font-bold text-gray-700 dark:text-gray-400">Total:</span>
-              <span className="text-2xl font-black text-red-600 dark:text-red-400">${getTotalCartPrice().toFixed(2)}</span>
-            </div>
-            <div className="flex space-x-3">
-              <button 
-                onClick={() => setShowConfirmModal(false)}
-                disabled={isOrdering}
-                className="flex-1 bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 py-3 rounded-xl font-bold hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors cursor-pointer"
-              >
-                Cancel
-              </button>
-              <button 
-                onClick={handleConfirmOrder}
-                disabled={isOrdering}
-                className="flex-1 bg-red-600 text-white py-3 rounded-xl font-bold flex justify-center items-center space-x-2 hover:bg-red-700 transition-colors shadow-lg shadow-red-600/30 cursor-pointer"
-              >
-                {isOrdering ? <Loader2 className="animate-spin" size={18} /> : <span>Approve</span>}
-              </button>
-            </div>
-          </div>
         </div>
       )}
     </div>

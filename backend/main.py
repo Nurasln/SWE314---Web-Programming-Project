@@ -3,9 +3,9 @@ from fastapi.middleware.cors import CORSMiddleware
 from sqlmodel import Session, select
 from typing import List, Optional
 
-from models import Table, MenuItem, Order, OrderItem, OrderStatus, Category
+from models import Table, MenuItem, Order, OrderItem, OrderStatus, Category, Staff, StaffRole
 from database import create_db_and_tables, get_session
-from schemas import AISuggestionRequest, AISuggestionResponse, CategoryCreate, TableBillResponse, PaymentRequest, TableBillItem
+from schemas import AISuggestionRequest, AISuggestionResponse, CategoryCreate, StaffCreate, DashboardStats
 from services.ai_service import AIWaiterService
 
 app = FastAPI(title="QuickPay: QR Menu & Split Bill")
@@ -33,6 +33,17 @@ def list_tables(session: Session = Depends(get_session)):
 
 @app.post("/tables", response_model=Table)
 def create_table(table: Table, session: Session = Depends(get_session)):
+    session.add(table)
+    session.commit()
+    session.refresh(table)
+    return table
+
+@app.put("/tables/{table_id}/clear", response_model=Table)
+def clear_table(table_id: int, session: Session = Depends(get_session)):
+    table = session.get(Table, table_id)
+    if not table:
+        raise HTTPException(status_code=404, detail="Table not found")
+    table.is_occupied = False
     session.add(table)
     session.commit()
     session.refresh(table)
@@ -134,67 +145,63 @@ def split_bill(order_id: int, num_people: int = Query(..., gt=0), session: Sessi
         "currency": "USD" # Can be altered depending on the region rules
     }
 
-@app.get("/tables/{table_id}/bill", response_model=TableBillResponse)
-def get_table_bill(table_id: int, session: Session = Depends(get_session)):
-    orders = session.exec(select(Order).where(Order.table_id == table_id).where(Order.status == OrderStatus.pending)).all()
-    items_resp = []
-    total = 0.0
-    for order in orders:
-        for item in order.order_items:
-            if item.status == OrderStatus.pending:
-                menu_item = session.get(MenuItem, item.menu_item_id)
-                if menu_item:
-                    items_resp.append(TableBillItem(
-                        order_item_id=item.id,
-                        name=menu_item.name,
-                        price=menu_item.price,
-                        quantity=item.quantity
-                    ))
-                    total += float(menu_item.price) * item.quantity
-    return TableBillResponse(items=items_resp, total_unpaid=round(total, 2))
+# -----------------
+# Admin & Staff Endpoints
+# -----------------
+@app.get("/staff", response_model=List[Staff])
+def list_staff(session: Session = Depends(get_session)):
+    return session.exec(select(Staff)).all()
 
-@app.post("/tables/{table_id}/pay")
-def pay_table_bill(table_id: int, payment: PaymentRequest, session: Session = Depends(get_session)):
-    paid_total = 0.0
-    
-    target_status = OrderStatus.pending_cash if payment.method == "cash" else OrderStatus.paid
-    
-    for item_id in payment.order_item_ids:
-        item = session.get(OrderItem, item_id)
-        if item and item.status == OrderStatus.pending:
-            order = session.get(Order, item.order_id)
-            if order and order.table_id == table_id:
-                item.status = target_status
-                session.add(item)
-                menu_item = session.get(MenuItem, item.menu_item_id)
-                if menu_item:
-                    paid_total += float(menu_item.price) * item.quantity
-                    
+@app.post("/staff", response_model=Staff)
+def create_staff(staff_in: StaffCreate, session: Session = Depends(get_session)):
+    staff_data = staff_in.dict() if hasattr(staff_in, "dict") else staff_in.model_dump()
+    staff = Staff(**staff_data)
+    session.add(staff)
     session.commit()
-    
-    # check if any orders are now fully paid or pending_cash
-    orders = session.exec(select(Order).where(Order.table_id == table_id).where(Order.status == OrderStatus.pending)).all()
+    session.refresh(staff)
+    return staff
+
+@app.delete("/staff/{staff_id}")
+def delete_staff(staff_id: int, session: Session = Depends(get_session)):
+    staff = session.get(Staff, staff_id)
+    if not staff:
+        raise HTTPException(status_code=404, detail="Staff not found")
+    session.delete(staff)
+    session.commit()
+    return {"message": "Staff deleted successfully"}
+
+@app.post("/admin/login")
+def admin_login(pin: str = Query(...), session: Session = Depends(get_session)):
+    # Simple pin-based login: find a staff member with this pin and role manager/waiter
+    # In a real app, use secure hashing and JWT!
+    staff = session.exec(select(Staff).where(Staff.pin == pin)).first()
+    if not staff:
+        # Fallback to default admin pin for testing if db is empty
+        if pin == "1234":
+            return {"status": "success", "role": "admin", "name": "Admin (Fallback)"}
+        raise HTTPException(status_code=401, detail="Invalid PIN")
+    return {"status": "success", "role": staff.role.value, "name": staff.name}
+
+@app.get("/admin/dashboard-stats", response_model=DashboardStats)
+def dashboard_stats(session: Session = Depends(get_session)):
+    # Calculate total revenue from all order items (assuming everything is revenue for simplicity)
+    # Or specifically from paid orders if we had payment flow. We'll use all items for the demo.
+    orders = session.exec(select(Order)).all()
+    total_revenue = 0.0
     for order in orders:
-        all_resolved = all(i.status in (OrderStatus.paid, OrderStatus.pending_cash) for i in order.order_items)
-        if all_resolved and len(order.order_items) > 0:
-            order.status = OrderStatus.paid if target_status == OrderStatus.paid else OrderStatus.pending_cash
-            session.add(order)
-            
-    session.commit()
+        if order.status == OrderStatus.paid:
+            for item in order.order_items:
+                if item.menu_item:
+                    total_revenue += float(item.menu_item.price) * int(item.quantity)
     
-    # if NO pending orders remain for table, mark table unoccupied
-    pending_orders = session.exec(select(Order).where(Order.table_id == table_id).where(Order.status == OrderStatus.pending)).all()
-    if not pending_orders:
-        table = session.get(Table, table_id)
-        if table:
-            table.is_occupied = False
-            session.add(table)
-            session.commit()
-            
-    return {
-        "message": "Payment successful" if payment.method != "cash" else "Marked for cash payment", 
-        "paid_amount": round(paid_total, 2)
-    }
+    active_tables = len(session.exec(select(Table).where(Table.is_occupied == True)).all())
+    total_orders = len(orders)
+    
+    return DashboardStats(
+        total_revenue=total_revenue,
+        active_tables=active_tables,
+        total_orders=total_orders
+    )
 
 # -----------------
 # AI Waiter Endpoint
@@ -208,7 +215,7 @@ def ai_suggest(request: AISuggestionRequest, session: Session = Depends(get_sess
     if not menu_items:
         current_menu = "The menu is currently empty."
     else:
-        current_menu = "\n".join([f"- {item.name}: ${item.price} ({item.category.name if item.category else 'No Category'})" + (f" - Ingredients/Info: {item.ingredients}" if item.ingredients else "") for item in menu_items])
+        current_menu = "\n".join([f"- {item.name}: ${item.price} ({item.category.name if item.category else 'No Category'})" for item in menu_items])
         
     # Get suggestion from Groq AI
     reply = ai_service.get_suggestion(user_message=request.user_message, current_menu=current_menu)
