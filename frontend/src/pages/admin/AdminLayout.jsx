@@ -5,16 +5,16 @@ import { LayoutDashboard, Users, LogOut, Store } from 'lucide-react';
 const AdminLayout = () => {
   const location = useLocation();
   const navigate = useNavigate();
-  const [user, setUser] = useState(null);
+  const [user] = useState(() => {
+    const authData = localStorage.getItem('adminAuth');
+    return authData ? JSON.parse(authData) : null;
+  });
 
   useEffect(() => {
-    const authData = localStorage.getItem('adminAuth');
-    if (!authData) {
+    if (!user) {
       navigate('/admin/login');
-    } else {
-      setUser(JSON.parse(authData));
     }
-  }, [navigate]);
+  }, [user, navigate]);
 
   const handleLogout = () => {
     localStorage.removeItem('adminAuth');

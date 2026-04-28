@@ -11,21 +11,21 @@ const Checkout = () => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    const fetchBillInfo = async (people) => {
+      try {
+        setLoading(true);
+        const response = await axios.get(`https://swe314-web-programming-project-production.up.railway.app/orders/${orderId}/split-bill?num_people=${people}`);
+        setBillData(response.data);
+      } catch (err) {
+        console.error(err);
+        alert('Could not fetch bill total. Please check if items were added.');
+      } finally {
+        setLoading(false);
+      }
+    };
+
     fetchBillInfo(numPeople);
   }, [numPeople, orderId]);
-
-  const fetchBillInfo = async (people) => {
-    try {
-      setLoading(true);
-      const response = await axios.get(`https://swe314-web-programming-project-production.up.railway.app/orders/${orderId}/split-bill?num_people=${people}`);
-      setBillData(response.data);
-    } catch (err) {
-      console.error(err);
-      alert('Could not fetch bill total. Please check if items were added.');
-    } finally {
-      setLoading(false);
-    }
-  };
 
   const handleSplitChange = (n) => {
     setNumPeople(n);
