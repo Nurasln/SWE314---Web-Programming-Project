@@ -1,0 +1,8 @@
+{
+  "rewrites": [
+    {
+      "source": "/api/(.*)",
+      "destination": "https://swe314-web-programming-project-production.up.railway.app/$1"
+    }
+  ]
+}
