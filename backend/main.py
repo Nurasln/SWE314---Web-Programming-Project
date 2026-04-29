@@ -3,10 +3,6 @@ from fastapi.middleware.cors import CORSMiddleware
 from sqlmodel import Session, select
 from typing import List, Optional
 
-from slowapi import Limiter
-from slowapi.util import get_remote_address
-from slowapi.middleware import SlowAPIMiddleware
-
 from models import Table, MenuItem, Order, OrderItem, OrderStatus, Category, Staff
 from database import create_db_and_tables, get_session
 from schemas import AISuggestionRequest, AISuggestionResponse, CategoryCreate, StaffCreate, DashboardStats
@@ -14,10 +10,6 @@ from services.ai_service import AIWaiterService
 from auth import create_access_token, get_current_admin
 
 app = FastAPI(title="QuickPay: QR Menu & Split Bill")
-
-limiter = Limiter(key_func=get_remote_address)
-app.state.limiter = limiter
-app.add_middleware(SlowAPIMiddleware)
 
 app.add_middleware(
     CORSMiddleware,
