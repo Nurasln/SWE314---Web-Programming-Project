@@ -15,10 +15,13 @@ const AdminLogin = () => {
     setLoading(true);
 
     try {
-      const response = await axios.post(`https://swe314-web-programming-project-production.up.railway.app/admin/login?pin=${pin}`);
-      if (response.data.status === 'success') {
-        // Store simple auth flag in local storage
-        localStorage.setItem('adminAuth', JSON.stringify(response.data));
+      const res = await axios.post(`/api/admin/login?pin=${pin}`);
+
+      if (res.data.status === 'success') {
+        localStorage.setItem('token', res.data.access_token);
+        localStorage.setItem('role', res.data.role);
+        localStorage.setItem('name', res.data.name || 'Admin');
+
         navigate('/admin/dashboard');
       }
     } catch (err) {
@@ -45,22 +48,21 @@ const AdminLogin = () => {
               <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
                 Staff PIN
               </label>
-              <div className="relative">
-                <input
-                  type="password"
-                  maxLength="4"
-                  value={pin}
-                  onChange={(e) => setPin(e.target.value.replace(/\D/g, ''))}
-                  className="w-full text-center text-3xl tracking-[0.5em] font-black p-4 bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-xl focus:ring-4 focus:ring-red-500/20 focus:border-red-500 outline-none transition-all dark:text-white"
-                  placeholder="••••"
-                  autoFocus
-                />
-              </div>
+
+              <input
+                type="password"
+                maxLength="4"
+                value={pin}
+                onChange={(e) => setPin(e.target.value.replace(/\D/g, ''))}
+                className="w-full text-center text-3xl tracking-[0.5em] font-black p-4 bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-xl focus:ring-4 focus:ring-red-500/20 focus:border-red-500 outline-none transition-all dark:text-white"
+                placeholder="••••"
+                autoFocus
+              />
             </div>
 
             {error && (
               <div className="flex items-center gap-2 text-red-600 bg-red-50 dark:bg-red-900/20 p-3 rounded-lg text-sm font-medium">
-                <AlertCircle className="w-5 h-5 flex-shrink-0" />
+                <AlertCircle className="w-5 h-5" />
                 <p>{error}</p>
               </div>
             )}

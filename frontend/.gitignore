@@ -1,3 +1,11 @@
+# -----------------
+# FRONTEND
+# -----------------
+node_modules/
+dist/
+dist-ssr/
+*.local
+
 # Logs
 logs
 *.log
@@ -7,20 +15,35 @@ yarn-error.log*
 pnpm-debug.log*
 lerna-debug.log*
 
-node_modules
-dist
-dist-ssr
-*.local
+# -----------------
+# BACKEND (PYTHON)
+# -----------------
+venv/
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+*.db
+*.sqlite3
 
-# Editor directories and files
+# -----------------
+# SYSTEM FILES
+# -----------------
+.DS_Store
+
+# -----------------
+# EDITOR
+# -----------------
 .vscode/*
 !.vscode/extensions.json
 .idea
-.DS_Store
 *.suo
 *.ntvs*
 *.njsproj
 *.sln
 *.sw?
 
+# -----------------
+# DEPLOY
+# -----------------
 .vercel

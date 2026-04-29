@@ -1,24 +1,28 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect } from 'react';
 import { Outlet, Link, useLocation, useNavigate } from 'react-router-dom';
-import { LayoutDashboard, Users, LogOut, Store } from 'lucide-react';
+import { LayoutDashboard, Users, LogOut } from 'lucide-react';
 
 const AdminLayout = () => {
   const location = useLocation();
   const navigate = useNavigate();
-  const [user] = useState(() => {
-    const authData = localStorage.getItem('adminAuth');
-    return authData ? JSON.parse(authData) : null;
-  });
+
+  const token = localStorage.getItem('token');
+  const role = localStorage.getItem('role') || 'admin';
+  const name = localStorage.getItem('name') || 'Admin';
 
   useEffect(() => {
-    if (!user) {
-      navigate('/admin/login');
+    if (!token) {
+      navigate('/admin/login', { replace: true });
     }
-  }, [user, navigate]);
+  }, [token, navigate]);
 
   const handleLogout = () => {
+    localStorage.removeItem('token');
+    localStorage.removeItem('role');
+    localStorage.removeItem('name');
     localStorage.removeItem('adminAuth');
-    navigate('/admin/login');
+
+    navigate('/admin/login', { replace: true });
   };
 
   const navItems = [
@@ -26,12 +30,11 @@ const AdminLayout = () => {
     { path: '/admin/staff', icon: Users, label: 'Staff' }
   ];
 
-  if (!user) return null;
+  if (!token) return null;
 
   return (
     <div className="flex min-h-screen bg-gray-50 dark:bg-gray-900 font-sans text-gray-900 dark:text-white">
-      {/* Sidebar */}
-      <aside className="w-64 bg-white dark:bg-gray-800 border-r border-gray-100 dark:border-gray-700 flex flex-col hidden md:flex sticky top-0 h-screen">
+      <aside className="w-64 bg-white dark:bg-gray-800 border-r border-gray-100 dark:border-gray-700 flex-col hidden md:flex sticky top-0 h-screen">
         <div className="p-6 border-b border-gray-100 dark:border-gray-700 flex items-center gap-3">
           <div className="bg-red-600 text-white font-black rounded-lg p-2 transform -rotate-3 shadow-md">
             Q
@@ -46,6 +49,7 @@ const AdminLayout = () => {
           {navItems.map((item) => {
             const isActive = location.pathname.includes(item.path);
             const Icon = item.icon;
+
             return (
               <Link
                 key={item.path}
@@ -66,10 +70,11 @@ const AdminLayout = () => {
         <div className="p-4 border-t border-gray-100 dark:border-gray-700">
           <div className="flex items-center justify-between mb-4 px-2">
             <div>
-              <p className="text-sm font-bold">{user.name}</p>
-              <p className="text-xs text-gray-500 capitalize">{user.role}</p>
+              <p className="text-sm font-bold">{name}</p>
+              <p className="text-xs text-gray-500 capitalize">{role}</p>
             </div>
           </div>
+
           <button
             onClick={handleLogout}
             className="w-full flex items-center justify-center gap-2 text-gray-600 dark:text-gray-400 hover:text-red-600 dark:hover:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 p-3 rounded-xl transition-colors font-semibold text-sm"
@@ -80,9 +85,7 @@ const AdminLayout = () => {
         </div>
       </aside>
 
-      {/* Main Content */}
       <main className="flex-1 flex flex-col min-h-screen">
-        {/* Mobile Header */}
         <header className="md:hidden bg-white dark:bg-gray-800 border-b border-gray-100 dark:border-gray-700 p-4 flex items-center justify-between sticky top-0 z-20">
           <div className="flex items-center gap-2">
             <div className="bg-red-600 text-white font-black rounded-lg p-1.5 px-3 transform -rotate-3 text-sm">
@@ -90,16 +93,17 @@ const AdminLayout = () => {
             </div>
             <span className="font-black text-lg">Admin</span>
           </div>
+
           <button onClick={handleLogout} className="p-2 text-gray-500 hover:text-red-600">
             <LogOut className="w-5 h-5" />
           </button>
         </header>
 
-        {/* Mobile Nav */}
         <nav className="md:hidden bg-white dark:bg-gray-800 border-b border-gray-100 dark:border-gray-700 flex p-2 gap-2 overflow-x-auto sticky top-[68px] z-10">
           {navItems.map((item) => {
             const isActive = location.pathname.includes(item.path);
             const Icon = item.icon;
+
             return (
               <Link
                 key={item.path}

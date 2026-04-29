@@ -40,6 +40,7 @@ class OrderItem(SQLModel, table=True):
     quantity: int = Field(default=1)
     
     order: Optional["Order"] = Relationship(back_populates="order_items")
+    menu_item: Optional["MenuItem"] = Relationship()
 
 class StaffRole(str, Enum):
     manager = "manager"
