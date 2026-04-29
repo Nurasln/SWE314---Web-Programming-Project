@@ -232,7 +232,6 @@ def revenue_trend(session: Session = Depends(get_session), current_admin: dict =
 ai_service = AIWaiterService()
 
 @app.post("/ai/suggest", response_model=AISuggestionResponse)
-@limiter.limit("5/minute")
 def ai_suggest(fastapi_request: Request, request: AISuggestionRequest, session: Session = Depends(get_session)):
     menu_items = session.exec(select(MenuItem)).all()
 
