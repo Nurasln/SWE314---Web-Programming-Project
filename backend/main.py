@@ -1,6 +1,9 @@
 from fastapi import FastAPI, Depends, HTTPException, Query, Request
 from fastapi.middleware.cors import CORSMiddleware
 from sqlmodel import Session, select
+from slowapi import Limiter, _rate_limit_exceeded_handler
+from slowapi.util import get_remote_address
+from slowapi.errors import RateLimitExceeded
 from typing import List, Optional
 
 from models import Table, MenuItem, Order, OrderItem, OrderStatus, Category, Staff
@@ -10,6 +13,10 @@ from services.ai_service import AIWaiterService
 from auth import create_access_token, get_current_admin
 
 app = FastAPI(title="QuickPay: QR Menu & Split Bill")
+
+limiter = Limiter(key_func=get_remote_address)
+app.state.limiter = limiter
+app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
 
 app.add_middleware(
     CORSMiddleware,
@@ -232,7 +239,8 @@ def revenue_trend(session: Session = Depends(get_session), current_admin: dict =
 ai_service = AIWaiterService()
 
 @app.post("/ai/suggest", response_model=AISuggestionResponse)
-def ai_suggest(fastapi_request: Request, request: AISuggestionRequest, session: Session = Depends(get_session)):
+@limiter.limit("5/minute")
+def ai_suggest(request: Request, body: AISuggestionRequest, session: Session = Depends(get_session)):
     menu_items = session.exec(select(MenuItem)).all()
 
     if not menu_items:
@@ -244,7 +252,7 @@ def ai_suggest(fastapi_request: Request, request: AISuggestionRequest, session: 
         ])
 
     reply = ai_service.get_suggestion(
-        user_message=request.user_message,
+        user_message=body.user_message,
         current_menu=current_menu
     )
 

@@ -25,3 +25,7 @@ Bu proje istenilen görev yönergelerine (Student A, B, C, D, E) tamamen uygun o
 - Dizinin klasör mimarisi `/backend`, `/frontend`, `/docs`, `/screenshots` olmak üzere profesyonel sektörel standartlarda ayrıldı.
 - `REPORT.md` ve `README.md` dokümanları yazılarak projenin teknik derinliği ve genel tanımı detaylandırılması sağlandı.
 - Tailwind sınıfları, özel animasyonlar, gölgelendirmeler (shadows), CSS flex/grid sistemleri (Müşteri "premium" hissiyatı beklentisi için) zirveye taşındı. Proje ilk bakışta dikkat çeken şık bir yapıya büründü!
+
+### Security Audit
+- **Rate Limiting (slowapi):** FastAPI tarafına `slowapi` kütüphanesi entegre edildi. AI Garson uç noktasına saniyede 100 soru sorma (kotayı bitirme) gibi kötü niyetli veya spam istekleri engellemek için rate limiting (istek sınırlandırması) eklendi.
+- **OWASP Top 10 Denetimi:** I sanitized all inputs to prevent SQL Injection and managed API keys via `.env` files to prevent credential leakage. SQLModel kullanımı sayesinde veritabanı sorguları injection saldırılarına karşı doğal bir koruma altına alınmış, hassas API anahtarları kaynak kodundan izole edilerek environment değişkenleri olarak saklanmıştır.
