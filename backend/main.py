@@ -18,7 +18,15 @@ from models import Table, MenuItem, Order, OrderItem, OrderStatus, Category, Sta
 from database import create_db_and_tables, get_session
 from schemas import AISuggestionRequest, AISuggestionResponse, CategoryCreate, StaffCreate, DashboardStats
 from services.ai_service import AIWaiterService
-from auth import create_access_token, get_current_admin, SECRET_KEY, ALGORITHM
+from auth import (
+    create_access_token,
+    get_current_admin,
+    admin_only,
+    manager_or_admin,
+    staff_access,
+    SECRET_KEY,
+    ALGORITHM
+)
 
 
 app = FastAPI(title="QuickPay: QR Menu & Split Bill")
@@ -276,7 +284,7 @@ def pay_order(order_id: int, session: Session = Depends(get_session)):
 @app.get("/staff", response_model=List[Staff])
 def list_staff(
     session: Session = Depends(get_session),
-    current_admin: dict = Depends(get_current_admin)
+    current_admin: dict = Depends(manager_or_admin)
 ):
     return session.exec(select(Staff)).all()
 
@@ -285,7 +293,7 @@ def list_staff(
 def create_staff(
     staff_in: StaffCreate,
     session: Session = Depends(get_session),
-    current_admin: dict = Depends(get_current_admin)
+    current_admin: dict = Depends(manager_or_admin)
 ):
     staff_data = staff_in.dict() if hasattr(staff_in, "dict") else staff_in.model_dump()
     staff = Staff(**staff_data)
@@ -299,7 +307,7 @@ def create_staff(
 def delete_staff(
     staff_id: int,
     session: Session = Depends(get_session),
-    current_admin: dict = Depends(get_current_admin)
+    current_admin: dict = Depends(admin_only)
 ):
     staff = session.get(Staff, staff_id)
     if not staff:
