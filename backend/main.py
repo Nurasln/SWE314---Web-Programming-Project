@@ -5,6 +5,7 @@ from fastapi import FastAPI, Depends, HTTPException, Query, Request
 from fastapi.middleware.cors import CORSMiddleware
 from sqlmodel import Session, select
 from pydantic import BaseModel
+from jose import jwt, JWTError
 
 from slowapi import Limiter, _rate_limit_exceeded_handler
 from slowapi.util import get_remote_address
@@ -17,7 +18,7 @@ from models import Table, MenuItem, Order, OrderItem, OrderStatus, Category, Sta
 from database import create_db_and_tables, get_session
 from schemas import AISuggestionRequest, AISuggestionResponse, CategoryCreate, StaffCreate, DashboardStats
 from services.ai_service import AIWaiterService
-from auth import create_access_token, get_current_admin
+from auth import create_access_token, get_current_admin, SECRET_KEY, ALGORITHM
 
 
 app = FastAPI(title="QuickPay: QR Menu & Split Bill")
@@ -30,13 +31,19 @@ app.state.limiter = limiter
 app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
 
 # -----------------
-# Google Login Config
+# Auth Config
 # -----------------
 GOOGLE_CLIENT_ID = os.getenv("GOOGLE_CLIENT_ID")
+ADMIN_2FA_CODE = os.getenv("ADMIN_2FA_CODE", "246810")
 
 
 class GoogleLoginRequest(BaseModel):
     credential: str
+
+
+class TwoFARequest(BaseModel):
+    pending_token: str
+    code: str
 
 
 # -----------------
@@ -54,6 +61,33 @@ app.add_middleware(
 @app.on_event("startup")
 def on_startup():
     create_db_and_tables()
+
+
+# -----------------
+# Helper
+# -----------------
+def create_pending_2fa_response(sub: str, role: str, auth_provider: str, name: str, email: Optional[str] = None):
+    pending_token = create_access_token({
+        "sub": sub,
+        "role": role,
+        "auth_provider": auth_provider,
+        "two_factor": "pending",
+        "name": name,
+        "email": email
+    })
+
+    response = {
+        "status": "2fa_required",
+        "pending_token": pending_token,
+        "message": "2FA verification required",
+        "role": role,
+        "name": name
+    }
+
+    if email:
+        response["email"] = email
+
+    return response
 
 
 # -----------------
@@ -277,7 +311,7 @@ def delete_staff(
 
 
 # -----------------
-# Admin Authentication
+# Admin Authentication + 2FA
 # -----------------
 @app.post("/admin/login")
 def admin_login(pin: str = Query(...), session: Session = Depends(get_session)):
@@ -285,35 +319,21 @@ def admin_login(pin: str = Query(...), session: Session = Depends(get_session)):
 
     if not staff:
         if pin == "1234":
-            token = create_access_token({
-                "sub": "admin",
-                "role": "admin",
-                "auth_provider": "pin"
-            })
-
-            return {
-                "status": "success",
-                "access_token": token,
-                "token_type": "bearer",
-                "role": "admin",
-                "name": "Admin (Fallback)"
-            }
+            return create_pending_2fa_response(
+                sub="admin",
+                role="admin",
+                auth_provider="pin",
+                name="Admin (Fallback)"
+            )
 
         raise HTTPException(status_code=401, detail="Invalid PIN")
 
-    token = create_access_token({
-        "sub": staff.name,
-        "role": staff.role.value,
-        "auth_provider": "pin"
-    })
-
-    return {
-        "status": "success",
-        "access_token": token,
-        "token_type": "bearer",
-        "role": staff.role.value,
-        "name": staff.name
-    }
+    return create_pending_2fa_response(
+        sub=staff.name,
+        role=staff.role.value,
+        auth_provider="pin",
+        name=staff.name
+    )
 
 
 @app.post("/admin/google-login")
@@ -334,23 +354,57 @@ def google_login(body: GoogleLoginRequest):
         if not email:
             raise HTTPException(status_code=401, detail="Invalid Google account")
 
-        token = create_access_token({
-            "sub": email,
-            "role": "admin",
-            "auth_provider": "google"
-        })
-
-        return {
-            "status": "success",
-            "access_token": token,
-            "token_type": "bearer",
-            "role": "admin",
-            "name": name,
-            "email": email
-        }
+        return create_pending_2fa_response(
+            sub=email,
+            role="admin",
+            auth_provider="google",
+            name=name,
+            email=email
+        )
 
     except ValueError:
         raise HTTPException(status_code=401, detail="Invalid Google token")
+
+
+@app.post("/admin/verify-2fa")
+def verify_2fa(body: TwoFARequest):
+    if body.code != ADMIN_2FA_CODE:
+        raise HTTPException(status_code=401, detail="Invalid 2FA code")
+
+    try:
+        payload = jwt.decode(body.pending_token, SECRET_KEY, algorithms=[ALGORITHM])
+
+        if payload.get("two_factor") != "pending":
+            raise HTTPException(status_code=401, detail="Invalid pending token")
+
+        role = payload.get("role")
+        sub = payload.get("sub")
+        name = payload.get("name") or sub
+        email = payload.get("email")
+
+        final_token = create_access_token({
+            "sub": sub,
+            "role": role,
+            "auth_provider": payload.get("auth_provider"),
+            "two_factor": "verified",
+            "email": email
+        })
+
+        response = {
+            "status": "success",
+            "access_token": final_token,
+            "token_type": "bearer",
+            "role": role,
+            "name": name
+        }
+
+        if email:
+            response["email"] = email
+
+        return response
+
+    except JWTError:
+        raise HTTPException(status_code=401, detail="Invalid pending token")
 
 
 # -----------------
