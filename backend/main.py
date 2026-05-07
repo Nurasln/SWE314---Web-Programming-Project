@@ -1,7 +1,17 @@
+import os
+from typing import List, Optional
+
 from fastapi import FastAPI, Depends, HTTPException, Query, Request
 from fastapi.middleware.cors import CORSMiddleware
 from sqlmodel import Session, select
-from typing import List, Optional
+from pydantic import BaseModel
+
+from slowapi import Limiter, _rate_limit_exceeded_handler
+from slowapi.util import get_remote_address
+from slowapi.errors import RateLimitExceeded
+
+from google.oauth2 import id_token
+from google.auth.transport import requests as google_requests
 
 from models import Table, MenuItem, Order, OrderItem, OrderStatus, Category, Staff
 from database import create_db_and_tables, get_session
@@ -9,8 +19,29 @@ from schemas import AISuggestionRequest, AISuggestionResponse, CategoryCreate, S
 from services.ai_service import AIWaiterService
 from auth import create_access_token, get_current_admin
 
+
 app = FastAPI(title="QuickPay: QR Menu & Split Bill")
 
+# -----------------
+# Rate Limiting
+# -----------------
+limiter = Limiter(key_func=get_remote_address)
+app.state.limiter = limiter
+app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
+
+# -----------------
+# Google Login Config
+# -----------------
+GOOGLE_CLIENT_ID = os.getenv("GOOGLE_CLIENT_ID")
+
+
+class GoogleLoginRequest(BaseModel):
+    credential: str
+
+
+# -----------------
+# CORS Settings
+# -----------------
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
@@ -19,38 +50,63 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+
 @app.on_event("startup")
 def on_startup():
     create_db_and_tables()
 
+
+# -----------------
+# Table Endpoints
+# -----------------
 @app.get("/tables", response_model=List[Table])
 def list_tables(session: Session = Depends(get_session)):
     return session.exec(select(Table)).all()
 
+
 @app.post("/tables", response_model=Table)
-def create_table(table: Table, session: Session = Depends(get_session), current_admin: dict = Depends(get_current_admin)):
+def create_table(
+    table: Table,
+    session: Session = Depends(get_session),
+    current_admin: dict = Depends(get_current_admin)
+):
     session.add(table)
     session.commit()
     session.refresh(table)
     return table
 
+
 @app.put("/tables/{table_id}/clear", response_model=Table)
-def clear_table(table_id: int, session: Session = Depends(get_session), current_admin: dict = Depends(get_current_admin)):
+def clear_table(
+    table_id: int,
+    session: Session = Depends(get_session),
+    current_admin: dict = Depends(get_current_admin)
+):
     table = session.get(Table, table_id)
     if not table:
         raise HTTPException(status_code=404, detail="Table not found")
+
     table.is_occupied = False
     session.add(table)
     session.commit()
     session.refresh(table)
     return table
 
+
+# -----------------
+# Category Endpoints
+# -----------------
 @app.get("/categories", response_model=List[Category])
 def list_categories(session: Session = Depends(get_session)):
     return session.exec(select(Category)).all()
 
+
 @app.post("/categories", response_model=Category)
-def create_category(category_in: CategoryCreate, session: Session = Depends(get_session), current_admin: dict = Depends(get_current_admin)):
+def create_category(
+    category_in: CategoryCreate,
+    session: Session = Depends(get_session),
+    current_admin: dict = Depends(get_current_admin)
+):
     category_data = category_in.dict() if hasattr(category_in, "dict") else category_in.model_dump()
     category = Category(**category_data)
     session.add(category)
@@ -58,20 +114,37 @@ def create_category(category_in: CategoryCreate, session: Session = Depends(get_
     session.refresh(category)
     return category
 
+
+# -----------------
+# Menu Endpoints
+# -----------------
 @app.post("/menu-items", response_model=MenuItem)
-def create_menu_item(menu_item: MenuItem, session: Session = Depends(get_session), current_admin: dict = Depends(get_current_admin)):
+def create_menu_item(
+    menu_item: MenuItem,
+    session: Session = Depends(get_session),
+    current_admin: dict = Depends(get_current_admin)
+):
     session.add(menu_item)
     session.commit()
     session.refresh(menu_item)
     return menu_item
 
+
 @app.get("/menu-items", response_model=List[MenuItem])
-def list_menu_items(category_id: Optional[int] = None, session: Session = Depends(get_session)):
+def list_menu_items(
+    category_id: Optional[int] = None,
+    session: Session = Depends(get_session)
+):
     query = select(MenuItem)
     if category_id:
         query = query.where(MenuItem.category_id == category_id)
+
     return session.exec(query).all()
 
+
+# -----------------
+# Order Endpoints
+# -----------------
 @app.post("/orders", response_model=Order)
 def create_order(table_id: int, session: Session = Depends(get_session)):
     table = session.get(Table, table_id)
@@ -88,8 +161,14 @@ def create_order(table_id: int, session: Session = Depends(get_session)):
     session.refresh(order)
     return order
 
+
 @app.post("/orders/{order_id}/items", response_model=OrderItem)
-def add_order_item(order_id: int, menu_item_id: int, quantity: int = 1, session: Session = Depends(get_session)):
+def add_order_item(
+    order_id: int,
+    menu_item_id: int,
+    quantity: int = 1,
+    session: Session = Depends(get_session)
+):
     order = session.get(Order, order_id)
     if not order:
         raise HTTPException(status_code=404, detail="Order not found")
@@ -98,14 +177,24 @@ def add_order_item(order_id: int, menu_item_id: int, quantity: int = 1, session:
     if not menu_item:
         raise HTTPException(status_code=404, detail="Menu item not found")
 
-    order_item = OrderItem(order_id=order_id, menu_item_id=menu_item_id, quantity=quantity)
+    order_item = OrderItem(
+        order_id=order_id,
+        menu_item_id=menu_item_id,
+        quantity=quantity
+    )
+
     session.add(order_item)
     session.commit()
     session.refresh(order_item)
     return order_item
 
+
 @app.get("/orders/{order_id}/split-bill")
-def split_bill(order_id: int, num_people: int = Query(..., gt=0), session: Session = Depends(get_session)):
+def split_bill(
+    order_id: int,
+    num_people: int = Query(..., gt=0),
+    session: Session = Depends(get_session)
+):
     order = session.get(Order, order_id)
     if not order:
         raise HTTPException(status_code=404, detail="Order not found")
@@ -127,6 +216,7 @@ def split_bill(order_id: int, num_people: int = Query(..., gt=0), session: Sessi
         "currency": "USD"
     }
 
+
 @app.put("/orders/{order_id}/pay")
 def pay_order(order_id: int, session: Session = Depends(get_session)):
     order = session.get(Order, order_id)
@@ -139,14 +229,30 @@ def pay_order(order_id: int, session: Session = Depends(get_session)):
     session.commit()
     session.refresh(order)
 
-    return {"message": "Order marked as paid", "order_id": order_id, "status": order.status}
+    return {
+        "message": "Order marked as paid",
+        "order_id": order_id,
+        "status": order.status
+    }
 
+
+# -----------------
+# Staff Endpoints
+# -----------------
 @app.get("/staff", response_model=List[Staff])
-def list_staff(session: Session = Depends(get_session), current_admin: dict = Depends(get_current_admin)):
+def list_staff(
+    session: Session = Depends(get_session),
+    current_admin: dict = Depends(get_current_admin)
+):
     return session.exec(select(Staff)).all()
 
+
 @app.post("/staff", response_model=Staff)
-def create_staff(staff_in: StaffCreate, session: Session = Depends(get_session), current_admin: dict = Depends(get_current_admin)):
+def create_staff(
+    staff_in: StaffCreate,
+    session: Session = Depends(get_session),
+    current_admin: dict = Depends(get_current_admin)
+):
     staff_data = staff_in.dict() if hasattr(staff_in, "dict") else staff_in.model_dump()
     staff = Staff(**staff_data)
     session.add(staff)
@@ -154,22 +260,37 @@ def create_staff(staff_in: StaffCreate, session: Session = Depends(get_session),
     session.refresh(staff)
     return staff
 
+
 @app.delete("/staff/{staff_id}")
-def delete_staff(staff_id: int, session: Session = Depends(get_session), current_admin: dict = Depends(get_current_admin)):
+def delete_staff(
+    staff_id: int,
+    session: Session = Depends(get_session),
+    current_admin: dict = Depends(get_current_admin)
+):
     staff = session.get(Staff, staff_id)
     if not staff:
         raise HTTPException(status_code=404, detail="Staff not found")
+
     session.delete(staff)
     session.commit()
     return {"message": "Staff deleted successfully"}
 
+
+# -----------------
+# Admin Authentication
+# -----------------
 @app.post("/admin/login")
 def admin_login(pin: str = Query(...), session: Session = Depends(get_session)):
     staff = session.exec(select(Staff).where(Staff.pin == pin)).first()
 
     if not staff:
         if pin == "1234":
-            token = create_access_token({"sub": "admin", "role": "admin"})
+            token = create_access_token({
+                "sub": "admin",
+                "role": "admin",
+                "auth_provider": "pin"
+            })
+
             return {
                 "status": "success",
                 "access_token": token,
@@ -177,9 +298,15 @@ def admin_login(pin: str = Query(...), session: Session = Depends(get_session)):
                 "role": "admin",
                 "name": "Admin (Fallback)"
             }
+
         raise HTTPException(status_code=401, detail="Invalid PIN")
 
-    token = create_access_token({"sub": staff.name, "role": staff.role.value})
+    token = create_access_token({
+        "sub": staff.name,
+        "role": staff.role.value,
+        "auth_provider": "pin"
+    })
+
     return {
         "status": "success",
         "access_token": token,
@@ -188,8 +315,52 @@ def admin_login(pin: str = Query(...), session: Session = Depends(get_session)):
         "name": staff.name
     }
 
+
+@app.post("/admin/google-login")
+def google_login(body: GoogleLoginRequest):
+    if not GOOGLE_CLIENT_ID:
+        raise HTTPException(status_code=500, detail="Google login is not configured")
+
+    try:
+        idinfo = id_token.verify_oauth2_token(
+            body.credential,
+            google_requests.Request(),
+            GOOGLE_CLIENT_ID
+        )
+
+        email = idinfo.get("email")
+        name = idinfo.get("name", "Google Admin")
+
+        if not email:
+            raise HTTPException(status_code=401, detail="Invalid Google account")
+
+        token = create_access_token({
+            "sub": email,
+            "role": "admin",
+            "auth_provider": "google"
+        })
+
+        return {
+            "status": "success",
+            "access_token": token,
+            "token_type": "bearer",
+            "role": "admin",
+            "name": name,
+            "email": email
+        }
+
+    except ValueError:
+        raise HTTPException(status_code=401, detail="Invalid Google token")
+
+
+# -----------------
+# Admin Dashboard
+# -----------------
 @app.get("/admin/dashboard-stats", response_model=DashboardStats)
-def dashboard_stats(session: Session = Depends(get_session), current_admin: dict = Depends(get_current_admin)):
+def dashboard_stats(
+    session: Session = Depends(get_session),
+    current_admin: dict = Depends(get_current_admin)
+):
     orders = session.exec(select(Order)).all()
     total_revenue = 0.0
 
@@ -208,8 +379,12 @@ def dashboard_stats(session: Session = Depends(get_session), current_admin: dict
         total_orders=total_orders
     )
 
+
 @app.get("/admin/revenue-trend")
-def revenue_trend(session: Session = Depends(get_session), current_admin: dict = Depends(get_current_admin)):
+def revenue_trend(
+    session: Session = Depends(get_session),
+    current_admin: dict = Depends(get_current_admin)
+):
     orders = session.exec(select(Order)).all()
     trend = []
 
@@ -229,10 +404,20 @@ def revenue_trend(session: Session = Depends(get_session), current_admin: dict =
 
     return trend
 
+
+# -----------------
+# AI Waiter Endpoint
+# -----------------
 ai_service = AIWaiterService()
 
+
 @app.post("/ai/suggest", response_model=AISuggestionResponse)
-def ai_suggest(fastapi_request: Request, request: AISuggestionRequest, session: Session = Depends(get_session)):
+@limiter.limit("5/minute")
+def ai_suggest(
+    request: Request,
+    body: AISuggestionRequest,
+    session: Session = Depends(get_session)
+):
     menu_items = session.exec(select(MenuItem)).all()
 
     if not menu_items:
@@ -244,7 +429,7 @@ def ai_suggest(fastapi_request: Request, request: AISuggestionRequest, session: 
         ])
 
     reply = ai_service.get_suggestion(
-        user_message=request.user_message,
+        user_message=body.user_message,
         current_menu=current_menu
     )
 
