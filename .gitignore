@@ -1,4 +1,7 @@
 frontend/test-results/
 backend/venv/
+backend/.venv/
 backend/__pycache__/
 *.pyc
+.env
+.env.*
