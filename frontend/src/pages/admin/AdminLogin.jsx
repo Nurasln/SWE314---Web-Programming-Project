@@ -1,7 +1,10 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Lock, LogIn, AlertCircle } from 'lucide-react';
 import axios from 'axios';
+
+const API_URL = import.meta.env.VITE_API_URL || '';
+const GOOGLE_CLIENT_ID = import.meta.env.VITE_GOOGLE_CLIENT_ID;
 
 const AdminLogin = () => {
   const [pin, setPin] = useState('');
@@ -9,20 +12,28 @@ const AdminLogin = () => {
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
 
+  const saveAuthAndNavigate = (data) => {
+    localStorage.setItem('token', data.access_token);
+    localStorage.setItem('role', data.role);
+    localStorage.setItem('name', data.name || 'Admin');
+
+    if (data.email) {
+      localStorage.setItem('email', data.email);
+    }
+
+    navigate('/admin/dashboard');
+  };
+
   const handleLogin = async (e) => {
     e.preventDefault();
     setError('');
     setLoading(true);
 
     try {
-      const res = await axios.post(`/api/admin/login?pin=${pin}`);
+      const res = await axios.post(`${API_URL}/admin/login?pin=${pin}`);
 
       if (res.data.status === 'success') {
-        localStorage.setItem('token', res.data.access_token);
-        localStorage.setItem('role', res.data.role);
-        localStorage.setItem('name', res.data.name || 'Admin');
-
-        navigate('/admin/dashboard');
+        saveAuthAndNavigate(res.data);
       }
     } catch (err) {
       setError(err.response?.data?.detail || 'Login failed. Please check your PIN.');
@@ -30,6 +41,67 @@ const AdminLogin = () => {
       setLoading(false);
     }
   };
+
+  useEffect(() => {
+    if (!GOOGLE_CLIENT_ID) return;
+
+    const handleGoogleCredential = async (response) => {
+      try {
+        setError('');
+        setLoading(true);
+
+        const res = await axios.post(`${API_URL}/admin/google-login`, {
+          credential: response.credential,
+        });
+
+        if (res.data.status === 'success') {
+          saveAuthAndNavigate(res.data);
+        }
+      } catch (err) {
+        setError(err.response?.data?.detail || 'Google login failed.');
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    const initializeGoogleLogin = () => {
+      if (!window.google) return;
+
+      window.google.accounts.id.initialize({
+        client_id: GOOGLE_CLIENT_ID,
+        callback: handleGoogleCredential,
+      });
+
+      const buttonContainer = document.getElementById('google-login-button');
+
+      if (buttonContainer) {
+        buttonContainer.innerHTML = '';
+
+        window.google.accounts.id.renderButton(buttonContainer, {
+          theme: 'outline',
+          size: 'large',
+          width: 320,
+          text: 'signin_with',
+        });
+      }
+    };
+
+    const loadGoogleScript = () => {
+      if (window.google) {
+        initializeGoogleLogin();
+        return;
+      }
+
+      const script = document.createElement('script');
+      script.src = 'https://accounts.google.com/gsi/client';
+      script.async = true;
+      script.defer = true;
+      script.onload = initializeGoogleLogin;
+      document.body.appendChild(script);
+    };
+
+    loadGoogleScript();
+  }, []);
 
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900 flex flex-col justify-center items-center p-4">
@@ -62,7 +134,7 @@ const AdminLogin = () => {
 
             {error && (
               <div className="flex items-center gap-2 text-red-600 bg-red-50 dark:bg-red-900/20 p-3 rounded-lg text-sm font-medium">
-                <AlertCircle className="w-5 h-5" />
+                <AlertCircle className="w-5 h-5 flex-shrink-0" />
                 <p>{error}</p>
               </div>
             )}
@@ -82,6 +154,22 @@ const AdminLogin = () => {
               )}
             </button>
           </form>
+
+          <div className="my-6 flex items-center gap-3">
+            <div className="h-px bg-gray-200 dark:bg-gray-700 flex-1" />
+            <span className="text-xs font-bold text-gray-400 uppercase">or</span>
+            <div className="h-px bg-gray-200 dark:bg-gray-700 flex-1" />
+          </div>
+
+          {GOOGLE_CLIENT_ID ? (
+            <div className="flex justify-center">
+              <div id="google-login-button" />
+            </div>
+          ) : (
+            <p className="text-center text-xs text-gray-400">
+              Google login is not configured.
+            </p>
+          )}
         </div>
       </div>
     </div>
