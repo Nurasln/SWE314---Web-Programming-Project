@@ -32,6 +32,11 @@ jobs:
         run: |
           cd backend
           python -m py_compile main.py models.py schemas.py database.py auth.py
+      - name: Run Backend Unit Tests
+        run: |
+          cd backend
+          export GROQ_API_KEY=test-key
+          python -m pytest tests/test_api.py
 
       # -----------------------------
       # Frontend (React/Vite)
