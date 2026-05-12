@@ -1,0 +1,70 @@
+name: CI/CD Pipeline
+
+on:
+  push:
+    branches: [ "main", "master", "final-eklemeler" ]
+  pull_request:
+    branches: [ "main", "master", "final-eklemeler" ]
+
+jobs:
+  test-and-build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      # -----------------------------
+      # Backend (Python)
+      # -----------------------------
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install Backend Dependencies
+        run: |
+          cd backend
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+
+      - name: Run Backend Syntax Check
+        run: |
+          cd backend
+          python -m py_compile main.py models.py schemas.py database.py auth.py
+      - name: Run Backend Unit Tests
+        run: |
+          cd backend
+          export GROQ_API_KEY=test-key
+          python -m pytest tests/test_api.py
+
+      # -----------------------------
+      # Frontend (React/Vite)
+      # -----------------------------
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install Frontend Dependencies
+        run: |
+          cd frontend
+          npm install
+
+      - name: Build Frontend
+        run: |
+          cd frontend
+          npm run build
+
+      # -----------------------------
+      # Playwright Tests
+      # -----------------------------
+      - name: Install Playwright Browsers
+        run: |
+          cd frontend
+          npx playwright install --with-deps
+
+      - name: Run Playwright E2E Tests
+        run: |
+          cd frontend
+          npx playwright test --grep-invert "visual"

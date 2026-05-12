@@ -1,0 +1,116 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  body {
+    @apply bg-[#fcfcfc] text-gray-900 dark:bg-gray-900 dark:text-gray-100 transition-colors duration-200;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  }
+}
+
+/* --- KATEGORİ SLIDER (TABLAR) --- */
+.category-slider {
+    display: flex;
+    justify-content: center;
+    gap: 15px;
+    overflow-x: auto;
+    padding: 15px 10px;
+    margin-bottom: 40px;
+    position: sticky;
+    top: 80px;
+    background: rgba(252, 252, 252, 0.95);
+    backdrop-filter: blur(5px);
+    z-index: 10;
+    border-bottom: 1px solid #eee;
+}
+
+.category-slider::-webkit-scrollbar { display: none; }
+
+.cat-btn {
+    background: white;
+    border: 2px solid #e67e22;
+    padding: 12px 28px;
+    border-radius: 50px;
+    cursor: pointer;
+    font-weight: 600;
+    color: #e67e22;
+    transition: all 0.3s ease;
+    white-space: nowrap;
+    font-size: 1rem;
+}
+
+.cat-btn.active, .cat-btn:hover {
+    background: #e67e22;
+    color: white;
+    box-shadow: 0 4px 15px rgba(230, 126, 34, 0.3);
+    transform: translateY(-2px);
+}
+
+/* --- MENÜ IZGARASI VE KARTLAR --- */
+.menu-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 30px;
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+.menu-card {
+    background: white;
+    border-radius: 20px;
+    overflow: hidden;
+    box-shadow: 0 10px 25px rgba(0,0,0,0.05);
+    transition: all 0.3s ease;
+    border: 1px solid #f0f0f0;
+    display: flex;
+    flex-direction: column;
+}
+
+.menu-card:hover { 
+    transform: translateY(-10px); 
+    box-shadow: 0 15px 35px rgba(0,0,0,0.1);
+}
+
+.menu-card img { 
+    width: 100%; 
+    height: 220px; 
+    object-fit: cover; 
+    border-bottom: 1px solid #f9f9f9;
+}
+
+.menu-card .info { 
+    padding: 20px; 
+    text-align: center; 
+    flex-grow: 1;
+}
+
+.menu-card .category-tag { 
+    font-size: 0.75rem; 
+    color: #e67e22; 
+    text-transform: uppercase; 
+    letter-spacing: 1px;
+    font-weight: bold;
+    display: block;
+    margin-bottom: 8px;
+}
+
+.menu-card .info h3 { 
+    margin: 5px 0 15px 0; 
+    font-size: 1.25rem; 
+    color: #2c3e50;
+}
+
+.menu-card .price { 
+    color: #27ae60; 
+    font-weight: 800; 
+    font-size: 1.4rem; 
+    margin: 0;
+}
+
+/* --- ANİMASYONLAR --- */
+@keyframes fadeInUp {
+    from { opacity: 0; transform: translateY(30px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+.fade-in { animation: fadeInUp 0.6s ease forwards; }

@@ -1,0 +1,20 @@
+Traceback (most recent call last):
+  File "<string>", line 1, in <module>
+    import models
+  File "C:\Users\Hp\Downloads\SWE314---Web-Programming-Project-main\SWE314---Web-Programming-Project-main\backend\models.py", line 9, in <module>
+    class Table(SQLModel, table=True):
+    ...<2 lines>...
+        is_occupied: bool = Field(default=False)
+  File "C:\Users\Hp\Downloads\SWE314---Web-Programming-Project-main\SWE314---Web-Programming-Project-main\backend\.venv\Lib\site-packages\sqlmodel\main.py", line 451, in __new__
+    new_cls = super().__new__(cls, name, bases, dict_used, **config_kwargs)
+  File "C:\Users\Hp\Downloads\SWE314---Web-Programming-Project-main\SWE314---Web-Programming-Project-main\backend\.venv\Lib\site-packages\pydantic\_internal\_model_construction.py", line 132, in __new__
+    private_attributes = inspect_namespace(
+        namespace, raw_annotations, config_wrapper.ignored_types, class_vars, base_field_names
+    )
+  File "C:\Users\Hp\Downloads\SWE314---Web-Programming-Project-main\SWE314---Web-Programming-Project-main\backend\.venv\Lib\site-packages\pydantic\_internal\_model_construction.py", line 477, in inspect_namespace
+    raise PydanticUserError(
+        f'Field {var_name!r} requires a type annotation', code='model-field-missing-annotation'
+    )
+pydantic.errors.PydanticUserError: Field 'id' requires a type annotation
+
+For further information visit https://errors.pydantic.dev/2.12/u/model-field-missing-annotation
