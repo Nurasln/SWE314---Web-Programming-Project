@@ -27,7 +27,21 @@
 
 ---
 
-### 📱 Mobile Experience
+### �️ Admin & QR Management
+
+| Admin Dashboard | Admin Panel | QR Manager | Staff Management |
+|-----------------|-------------|------------|------------------|
+| ![Admin Dashboard](./screenshots/admin_dashboard.png) | ![Admin Panel](./screenshots/admin_panel.png) | ![QR Manager](./screenshots/qr_manager.png) | ![Staff Management](./screenshots/staff_management.png) |
+| *Admin main dashboard* | *Control panel overview* | *Manage QR menus* | *Staff user management* |
+
+| Table Management | QR System | Two-Factor Verification |
+|------------------|-----------|-------------------------|
+| ![Table Management](./screenshots/table_management.png) | ![QR System](./screenshots/qr.png) | ![Two-Factor Verification](./screenshots/two_factor_verification.png) |
+| *Table reservations & status* | *QR menu entry flow* | *2FA login security* |
+
+---
+
+### �📱 Mobile Experience
 
 | Mobile Interface 1 | Mobile Interface 2 |
 |------------------|-------------------|
