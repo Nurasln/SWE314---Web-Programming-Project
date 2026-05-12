@@ -27,26 +27,27 @@
 
 ---
 
-### �️ Admin & QR Management
+### 🛠️ Admin & QR Management
 
-| Admin Dashboard | Admin Panel | QR Manager | Staff Management |
-|-----------------|-------------|------------|------------------|
-| ![Admin Dashboard](./screenshots/admin_dashboard.png) | ![Admin Panel](./screenshots/admin_panel.png) | ![QR Manager](./screenshots/qr_manager.png) | ![Staff Management](./screenshots/staff_management.png) |
-| *Admin main dashboard* | *Control panel overview* | *Manage QR menus* | *Staff user management* |
+| Admin Dashboard | Admin Panel |
+|-----------------|-------------|
+| ![Admin Dashboard](./screenshots/admin_dashboard.png) | ![Admin Panel](./screenshots/admin_panel.png) |
+| *Admin main dashboard* | *Control panel overview* |
 
-| Table Management | QR System | Two-Factor Verification |
-|------------------|-----------|-------------------------|
-| ![Table Management](./screenshots/table_management.png) | ![QR System](./screenshots/qr.png) | ![Two-Factor Verification](./screenshots/two_factor_verification.png) |
-| *Table reservations & status* | *QR menu entry flow* | *2FA login security* |
+| QR Manager | Staff Management |
+|------------|------------------|
+| ![QR Manager](./screenshots/qr_manager.png) | ![Staff Management](./screenshots/staff_management.png) |
+| *Manage QR menus* | *Staff user management* |
 
----
+| Table Management | QR System |
+|------------------|-----------|
+| ![Table Management](./screenshots/table_management.png) | ![QR System](./screenshots/qr.png) |
+| *Table reservations & status* | *QR menu entry flow* |
 
-### �📱 Mobile Experience
-
-| Mobile Interface 1 | Mobile Interface 2 |
-|------------------|-------------------|
-| ![Mobile 1](./screenshots/mobil%20(1).jpeg) | ![Mobile 2](./screenshots/mobil%20(2).jpeg) |
-| *Responsive Design* | *Payment Integration* |
+| Two-Factor Verification | |
+|-------------------------|---|
+| ![Two-Factor Verification](./screenshots/two_factor_verification.png) | |
+| *2FA login security* | |
 
 ---
 
